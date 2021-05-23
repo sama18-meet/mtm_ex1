@@ -1,4 +1,12 @@
 #include <map.h>
+#include <stdio.h>
+
+#define POINTS_PER_WIN 2
+#define POINTS_PER_LOSS 0
+#define POINTS_PER_DDRAW 1
+#define MAX_INT_DIGITS 10
+#define NUM_TOUR_STATISTICS_FIELDS = 6
+
 
 struct chess_system_t {
     Map tours; // by id
@@ -12,8 +20,8 @@ struct Tour {
     int max_games_per_player;
     bool active;
     Map games;
-    Map player; // key is player id, data is playerInTour
-    int num_players = 0;
+    Map players; // key is player id, data is playerInTour, only active players are included
+    num_players; // including deleted players
 } *Tour;
 
 struct Game {
@@ -24,12 +32,12 @@ struct Game {
     int time;
 } *Game;
 
+
 struct PlayerInTour {
     int id;
     int num_losses = 0;
     int num_wins = 0;
     int num_draws = 0;
-    int num_games = 0;
     int points;
 }
 
@@ -38,6 +46,7 @@ struct Player {
     int num_losses;
     int num_wins;
     int num_draws;
+    int playtime;
     int level;
 } *Player
 
@@ -59,12 +68,133 @@ void update_level_per_player(Player player);
 ////////////////////////////////////////////////////////////////////////////////
 
 
-/////////////// DECLERATIONS OF IMPLEMENTED INTERNAL FUNCTIONS /////////////////
-void removePlayerFromTour(Tour t_obj, int player_id);
-bool invalid_player_id(int id);
-void set_game_id(Game g);
-////////////////////////////////////////////////////////////////////////////////
-bool invalid_player_id(int id) { return id>0; }
+//////////////////////////////// ChessAddGame //////////////////////////////////
+
+ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
+                         int second_player, Winner winner, int play_time) {
+    if (chess == NULL) { return CHESS_NULL_ARGUMENT; }
+    if (!valid_player_id(first_player) || !valid_player_id(second_player)
+        || !valid_tour_id(tournament_id) || first_player == second_player) {
+        return CHESS_INVALID_ID;
+    }
+    Tour tour = mapGet(chess, tournament_id);
+    if (tour == NULL) { return CHESS_TOURNAMENT_NOT_EXIST; }
+    if (!tour->avtive) { return CHESS_TOURNAMENT_ENDED; }
+    char* game_id = generate_game_id(first_player, second_player);
+    if (mapContains(tour, game_id)) { return CHESS_GAME_ALREADY_EXIST; }
+    if (!valid_playtime(play_time)) { return CHESS_INVALID_PLAY_TIME; }
+    if (player_exceeded_games(tour, first_player || 
+        player_exceeded_games(tour, second_player))) { return CHESS_EXCEEDED_GAMES; }
+    PlayerInTour player1_in_tour = getPlayerInTour(tour, first_player);
+    PlayerInTour player2_in_tour = getPlayerInTour(tour, second_player);
+    if (player1_in_tour == NULL || player2_in_tour == NULL) { return CHESS_OUT_OF_MEMORY; }
+    Game game = createGame(game_id, first_player, second_player, winner, time);
+    if (game == NULL) { return CHESS_OUT_OF_MEMORY; }
+    MapResult res = mapPut(tour.games, game_id, game);
+    assert(res != MAP_NULL_ARGUMENT);
+    if (res == MAP_OUT_OF_MEMORY) { return NULL; }
+    update_players_info(chess, tour, first_player, second_player, winner, play_time);
+    return CHESS_SUCCESS;
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool valid_player_id(int id) {
+    return id>0;
+}
+bool valid_tour_id(int id) {
+    return id>0;
+}
+bool valid_playtime(int playtime) {
+    return playtime >= 0;
+}
+
+
+bool player_exceeded_games(Tour tour, player_id) {
+    assert(tour!=NULL);
+    if (!mapContains(tour->players, player_id)
+        return false;
+    PlayerInTour player = mapGet(tour->players, player_id);
+    assert(player!=NULL);
+    if (player->max_games_per_player == tour->max_games_per_player)
+        return true;
+    return false;
+}
+
+// if player doesn't already exist in tour, it adds it
+PlayerInTour getPlayerInTour(Tour tour, int player_id) {    
+    PlayerInTour player_in_tour = mapGet(tour.players, player_id);
+    if (player_in_tour == NULL) {
+        player_in_tour = createPlayerInTour(player_id);
+        if (player_in_tour == NULL) { return NULL; }
+        MapResult res = mapPut(tour.players, player_id, player_in_tour);
+        assert(res != MAP_NULL_ARGUMENT);
+        if (res == MAP_OUT_OF_MEMORY) { return NULL; }
+        tour->num_players++;
+    }
+    return player_in_tour;
+}
+
+PlayerInTour createPlayerInTour(int player_id) {
+    PlayerInTour player = malloc(sizeof(*player));
+    if (player == NULL) { return NULL; }
+    player->id = player_id;
+    player->num_losses = 0;
+    player->num_wins = 0;
+    player->num_draws = 0;
+    player->points = 0;
+    return player;
+}
+
+
+Game createGame(char* id, int player1, int player2, Winner winner, int time) {
+    Game game = malloc(sizeof(*game));
+    if (game == NULL) { return NULL; }
+    game->id = id;
+    game->player1_id = player1;
+    game->player2_id = player2;
+    game->winner = winner;
+    game->time = time;
+    return game;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+void update_players_info(ChessSystem chess, Tour tour, int first_player, int second_player, Winner winner, int playtime) {
+    assert(chess != NULL);
+    assert(tour != NULL);
+    PlayerInTour player1_in_tour = mapGet(tour.players, first_player);
+    assert(player1_in_tour != NULL);
+    PlayerInTour player2_in_tour = mapGet(tour.players, second_player);
+    assert(player2_in_tour != NULL);
+    Player player1_chess = mapGet(chess.players, first_player);
+    assert(player1_chess != NULL);
+    Player player2_chess = mapGet(chess.players, second_player);
+    assert(player2_chess != NULL);
+    if (winner == FIRST_PLAYER) {
+        player1_in_tour->num_wins++;
+        player1_chess->num_wins++;
+        player2_in_tour->num_losses++;
+        player2_chess->num_losses++;
+    }
+    else if (winner == SECOND_PLAYER) {
+        player2_in_tour->num_wins++;
+        player2_chess->num_wins++;
+        player1_in_tour->num_losses++;
+        player1_chess->num_losses++;
+    }
+    else if (winner == DRAW) {
+        player1_in_tour->num_draws++;
+        player1_chess->num_draws++;
+        player2_in_tour->num_draws++;
+        player2_chess->num_draws++;
+    }
+    player1_in_tour->playtime += playtime;
+    player2_in_tour->playtime += playtime;
+}
+
+
+///////////////////////////// ChessRemovePlayer ////////////////////////////////
 
 void removePlayerFromTour(Tour tour, int player_id) {
     if (tour.active) {
@@ -84,18 +214,148 @@ void removePlayerFromTour(Tour tour, int player_id) {
 
 ChessResult chessRemovePlayer(ChessSystem chess, int player_id) {
     if (chess == NULL) { return CHESS_NULL_ARGUMENT; }
-    if (invalid_player_id(player_id)) { return CHESS_INVALID_ID; }
+    assert(chess->players != NULL);
+    if (!valid_player_id(player_id)) { return CHESS_INVALID_ID; }
     if (!mapContains(chess.players, player_id)) { return CHESS_PLAYER_NOT_EXIST; }
-    for (MapKeyElement t_id = mapGetFirst(chess.tours); t_id != NULL; t_id = mapGetNext(chess.tour)) {
+    MAP_FOREACH(Tour, t_id, chess.tours) {
         MapDataElement t_obj = mapGet(chess.tours, t_id);
+        assert(t_obj != NULL);
         removePlayerFromTour(t_obj, player_id);
-    mapRemove(chess.players, player_id);  
+    mapRemove(chess->players, player_id);  
+    return CHESS_SUCCESS;
+}
+
+////////////////////////////// chessEndTournament //////////////////////////////
+
+void update_points(PlayerInTour player) {
+    assert(player != NULL);
+    int sum = player->num_wins*POINTS_PER_WIN
+              + player->num_losses*POINTS_PER_LOSS
+              + player->num_draws*POINTS_PER_DDRAW;
+    player->points = sum;
+}
+
+PlayerInTour max_player(PlayerInTour player1, PlayerInTour player2) {
+    if (player1->points != player2->points) 
+        return (player1->points > player2->points) ? player1 : player2;
+    if (player1->num_losses != player2->num_losses)
+        return (player1->num_losses < player2->num_losses) ? player1 : player2;
+    if (player1->num_wins != player2->num_wins)
+        return (player1->num_wins > player2->num_wins) ? player1 : player2;
+    return (player1->id < player2->id) : player1 : player2;
+}
+
+PlayerInTour get_winner(Tour tour) {
+    assert(tour != NULL);
+    assert(tour->players != NULL);
+    Player winner = mapGetFirst(players);
+    MAP_FOREACH(int, curr_player, players) {
+        update_points(player);
+        winner = max_player(winner, curr_player); 
+    }
+    tour.winner = winner;
+    return winner;
+}
+
+ChessResult chessEndTournament (ChessSystem chess, int tournament_id) {
+    if (chess == NULL) { return CHESS_NULL_ARGUMENT; }
+    if (!valid_tour_id(tournament_id)) { return CHESS_INVALID_ID; }
+    Tour tour = mapGet(chess.tours, tournament_id);
+    if (tour == NULL) { return CHESS_TOURNAMENT_NOT_EXIST; }
+    if (!tour.active) { return CHESS_TOURNAMENT_ENDED; }
+    if (mapGetSize(tour.games) == 0) { return CHESS_N0_GAMES; }
+    PlayerInTour winner = get_winner(tour);
+    if (winner == NULL) { return CHESS_OUT_OF_MEMORY; }
+    tour->winner = winner;
+    tour->active = false;
+    return CHESS_SUCCESS;
+}
+
+/////////////////////////// chessCalcAvgPlayTime /////////////////////////////////
+
+
+double chessCalculateAveragePlayTime (ChessSystem chess, int player_id, ChessResult* chess_result) {
+    if (chess == NULL) { return CHESS_NULL_ARGUMENT; }
+    if (!valid_player_id(player_id)) { return CHESS_INVALID_ID; }
+    Player player = mapGet(chess.players, player_id);
+    if (player == NULL) { return CHESS_PLAYER_NOT_EXIST; }
+    return player->playtime/(player->num_wins + player->num_losses + player->num_draws);
+}
+
+/////////////////////////// chessSaveTourStats /////////////////////////////////
+
+ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
+    if (chess == NULL) { return CHESS_NULL_ARGUMENT; }
+    bool found_ended_tour = false;
+    MAP_FOREACH(Tour, tour, chess.tours) {
+        if (tour->active) { continue; }
+        found_ended_tour = true;
+        FILE* stat_file = fopen(path_file, "a"); // shold this be "a" or "w" ?
+        if (stat_file == NULL) { return CHESS_SAVE_FAILURE; }
+        // start printing to file
+        str_returning_func funcs[NUM_TOUR_STATISTICS_FIELDS] = 
+                                { get_winner_id,
+                                  get_longest_game_time,
+                                  get_avg_game_time,
+                                  get_location,
+                                  get_num_of_games,
+                                  get_num_players };
+        for (int i=0; i<NUM_TOUR_STATISTICS_FIELDS; ++i) {
+            ChessResult put_res = put_to_file(funcs[i], stat_file, tour);
+            if (put_res != CHESS_SUCCESS) { return put_res; }
+        }
+        fclose(stat_file);
+    }
+    if (!found_ended_tour) { return CHESS_NO_TOURNAMENTS_ENDED; }
+    return CHESS_SUCCESS;
+}
+
+typedef char* (*str_returning_func)(Tour);
+ChessResult put_to_file(*str_returning_func func, FILE* file, Tour tour) {
+    char* out = func(tour);
+    if (out == NULL) { return CHESS_OUT_OF_MEMORY; }
+    int fputs_out = fputs(file, out);
+    free(out);
+    if (fputs_out == EOF) { return CHESS_SAVE_FAILURE; }
     return CHESS_SUCCESS;
 }
 
 
+char* int_to_str(int n);                       ///////////// NEEDS IMPLEMENTATION
+char* double_to_str(double d, int num_digits); ///////////// NEEDS IMPLEMENTATION
 
 
+/////////////////////////////////////////////////////////////////////////////
+char* get_winner_id(Tour tour) {
+    return int_to_str(winner_id);
+}
+char* get_longest_game_time(Tour tour) {
+    int longes_game_time = -1;
+    MAP_FOREACH(Game, game, tour->games) {
+        if (game->time > longest_game_time)
+            longest_game_time = game->time;
+    }
+    return int_to_str(longest_game_time)
+}
+char* get_avg_game_time(Tour tour) {
+    int times_sum = 0;
+    int num_games = 0
+    MAP_FOREACH(Game, game, tour->games) {
+        times_sum += game->time;
+        num_games++;
+    }
+    assert(mapGetSize(tour->games) == num_games);
+    return double_to_str(times_sum/num_games, 2);
+}
+char* get_location(Tour tour) {
+    return tour->location;
+}
+char* get_num_of_games(Tour tour) {
+    return int_to_str(mapGetSize(tour->games);
+}
+char* get_num_players(Tour tour) {
+    return int_to_str(tour->num_players);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// RAGHAD'S BLOCK //////////////////////////////////
