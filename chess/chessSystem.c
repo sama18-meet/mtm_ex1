@@ -436,7 +436,6 @@ char* get_num_players(Tour tour) {
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// RAGHAD'S BLOCK //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-
 bool valid_id(int id) {
     return id>0;
 }
@@ -457,18 +456,24 @@ ChessSystem chessCreate(){
     ChessSystem chess = malloc(sizeof(*chess));
     if (chess==NULL) { return NULL; }
 
-     chess->tours=mapCreate(copyDataElement,
-                        copyKeyElement,
-                        freeDataElement,
-                        freeKeyElement,
-                        compareKeyElements);
-     if (chess->tours == NULL) { return NULL; }
-     chess.players=mapCreate(copyDataElement,
-                        copyKeyElement,
-                        freeDataElement,
-                        freeKeyElement,
-                        compareKeyElements);
-    return chess; 
+     chess->tours=mapCreate(copyTour, 
+                        copyInt,
+                        freeTour,
+                        freeKey,
+                        compareInts);
+     if(chess->tours==NULL) return NULL;
+    
+     chess->players=mapCreate(copyPlayer,
+                        copyInt,
+                        freePlayer,
+                        freeKey,
+                        compareInts;
+    if(chess->players==NULL)
+    { 
+        mapDestroy(chess->tours);
+        return NULL;
+    }
+   return chess; 
 }
 
 
@@ -476,9 +481,11 @@ void chessDestroy(ChessSystem chess)
 {
     if(chess != NULL) 
     {
-    MAP_FOREACH(int, tours_id, chess->tours) {
-        chessRemoveTournament(chess, tours_id); 
-    }
+    for (MapKeyElement tours_id = mapGetFirst(chess->tours); tours_id != NULL; tours_id = mapGetNext(chess->tour))
+        {
+            //FOREACH (casting to int here )
+            chessRemoveTournament(chess, tours_id); 
+        }
     mapDestroy(chess.tours);
 
     for (MapKeyElement players_id = mapGetFirst(chess.players); players_id != NULL; players_id = mapGetNext(chess.players))
@@ -495,51 +502,57 @@ void chessDestroy(ChessSystem chess)
 ChessResult chessAddTournament (ChessSystem chess, int tournament_id, int max_games_per_player, const char* tournament_location)
 {
     if(!valid_id(tournament_id)) return CHESS_INVALID_ID; 
-    if(mapContains(chess.tours, tournament_id)) { return CHESS_TOURNAMENT_ALREADY_EXISTS; }
+    if(mapContains(chess->tours, tournament_id)) { return CHESS_TOURNAMENT_ALREADY_EXISTS; }
     if(!location_valid(tournament_location)) { retrun CHESS_INVALID_LOCATION; }
     if(!valid_id(max_games_per_player)) {return CHESS_INVALID_MAX_GAMES;}
 
-    Tour tour= malloc(sizeof(*tour));
-    if(tour==NULL) return NULL; //check the return
-    SetTour(tour, tournament_id, max_games_per_player, tournament_location);
-    mapPut(chess.tours, tournament_id, tour);
+    CreateTour(tour, tournament_id, max_games_per_player, tournament_location);
+    mapPut(chess->tours, tournament_id, tour);
+    freeTour(tour);
 }
 
 
-Tour SetTour(Tour tour, int tournament_id, int max_games_per_player, const char* tournament_location)
+Tour CreateTour(int tournament_id, int max_games_per_player, const char* tournament_location)
 {
-    tour.id= tournament_id;
-    tour.location= tournament_location;
-    tour.winner=NULL; //if NULL?? 
-    tour.max_games_per_player=max_games_per_player;
-    tour.active=false; // ?????
-    tour.games=mapCreate(copyDataElement,
+    Tour tour= malloc(sizeof(*tour));
+    if(tour==NULL) return NULL; //check the return
+    tour->id= tournament_id;
+    tour->location= tournament_location;
+    tour->winner=0; //if NULL?? 
+    tour->max_games_per_player=max_games_per_player;
+    tour->active=false; 
+    tour->games=mapCreate(copyDataElement,
                         copyKeyElement,
                         freeDataElement,
                         freeKeyElement,
                         compareKeyElements);
-    tour.playerInTour=mapCreate(copyDataElement,
+    tour->playerInTour=mapCreate(copyDataElement,
                         copyKeyElement,
                         freeDataElement,
                         freeKeyElement,
                         compareKeyElements);
-    tour.num_players = 0;
+    tour->num_players = 0;
     return tour;
 }
 
 
 int calc_level(Player player)
 {
-   return (6*(player.num_wins))-(10*(player.num_losses))+(2*(player.num_draws))/((player.num_draws)+(player.num_losses)+(player.num_wins));   
+   return (6*(player->num_wins))-(10*(player->num_losses))+(2*(player->num_draws))/((player->num_draws)+(player->num_losses)+(player->num_wins));   
 }
 
 ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
 {
     if(!valid_id(tournament_id)) return CHESS_INVALID_ID; 
-    if(!mapContains(chess.tours, tournament_id)) { return CHESS_TOURNAMENT_NOT_EXISTS; }
-    MapDataElement tour_obj=mapGet(chess.tours, tournament_id);
-    // make sure of the *t_obj
+    if(!mapContains(chess->tours, tournament_id)) { return CHESS_TOURNAMENT_NOT_EXISTS; }
+   
+   
+    MapDataElement tour_obj=mapGet(chess->tours, tournament_id);
+    if(tour_obj==NULL) return NULL;
+    freeTour(tour_obj;
+    free(tour_obj);
 
+    // make sure of the *t_obj
     for (MapKeyElement player_id = mapGetFirst(*tour_obj.playerInTour); player_id != NULL; player_id = mapGetNext(*tour_obj.player))
      {
          MapDataElement currentPlayerData=mapGet(chess.tours.*tour_obj.playerInTour, player_id);
@@ -554,7 +567,6 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
     free(tour);
     mapRemove(chess.tours, tournament_id);
 }
-
 
 
 ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
@@ -574,4 +586,85 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
     }
     // no printing emplemnted
 }
+//raghad's block 
+
+
+
+// COPY FUNCS
+Tour copyTour(Tour tour)
+{
+    Tour CopyOfTour=malloc(sizeof(*CopyOfTour));
+    if(CopyOfTour==NULL) return NULL;
+    CopyOfTour->id=tour->id;
+    CopyOfTour->location=tour->location;
+    CopyOfTour->max_games_per_player=tour->max_games_per_player;
+    CopyOfTour->active=tour->active;
+    CopyOfTour->games=mapCopy(tour->games);
+    CopyOfTour->playerInTour=mapCopy(tour->playerInTour);
+    CopyOfTour->num_players=tour->num_players;
+ return CopyOfTour;
+}
+
+ ?????? copyPlayerInTour(PalyerInTour playerInTour)
+{
+    PlayerInTour CopyOfplayerInTour=malloc(sizeof(*CopyOfplayerInTour));
+    if(CopyOfplayerInTour=NULL) return NULL;
+    CopyOfplayerInTour->id=playerInTour->id;
+    CopyOfplayerInTour->num_losses=playerInTour->num_losses;
+    CopyOfplayerInTour->num_wins=playerInTour->num_wins;
+    CopyOfplayerInTour->num_draws=playerInTour->num_draws;
+    CopyOfplayerInTour->points=playerInTour->points;
+    return copyPlayerInTour;
+}
+
+??????? copyPlayer(Player player)
+{
+    Player CopyOfplayer=malloc(sizeof(*CopyOfplayer));
+    if(CopyOfplayer=NULL) return NULL;
+    CopyOfplayer->id=playerInTour->id;
+    CopyOfplayer->num_losses=player->num_losses;
+    CopyOfplayer->num_wins=player->num_wins;
+    CopyOfplayer->num_draws=player->num_draws;
+    CopyOfplayer->playtime=player->playtime;
+    CopyOfplayer->level=player->level;
+    return copyPlayer;
+}
+int copyKey(MapKeyElement key)
+{
+    int *copyOfKey = malloc(sizeof(*copyOfKey));
+    if(copyOfKey==NULL) return NULL;
+    *copy = *(int *) key;
+    return copyOfKey;
+}
+
+
+//FREE FUNCS
+
+void freeTour(Tour tour)
+{
+    mapDestroy(tour->games);
+    mapDestroy(tour->playerInTour);
+    free(tour);
+}
+
+void freePlayerInTour(PlayerInTour player)
+{
+    free(player);
+}
+
+void freePlayer(Player player)
+{
+    free(player);
+}
+
+void freeKey(MapKeyElement key)
+{
+    free(key);
+}
+
+//COMPARE FUN
+int compareInts(MapKeyElement n1, MapKeyElement n2) {
+    return (*(int *) n1 - *(int *) n2);
+}
+
 
