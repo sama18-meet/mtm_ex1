@@ -20,12 +20,12 @@ struct Tour {
     int max_games_per_player;
     bool active;
     Map games;
-    Map players; // key is player id, data is playerInTour, only active players are included
-    num_players; // including deleted players
+    Map playerInTour; // key is player id, data is playerInTour, only active players are included
+    int num_players; // including deleted players
 } *Tour;
 
 struct Game {
-    char* id;
+    GameId id;
     int player1_id;
     int player2_id;
     Winner winner;
@@ -50,18 +50,82 @@ struct Player {
     int level;
 } *Player
 
-//// INTERNAL FUNCTIONS ////
-int calc_level(Player player);
-int calc_points(Player player);
-void destroy(ChessSystem chess_system);
-void set_gmae_id(Game game);
-Player set_tour_winner(Tour tour, Player player) // ?
-void update_points_per_player(PlayerInTour player);
-void update_level_per_player(Player player);
+
+struct GameId {
+    int id1;
+    int id2;
+}
 
 
 
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// FREE & COPY FUNCS ///////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+/////////////////////////////////// GameId /////////////////////////////////////
+
+GameId createGameId(int id1, int id2) {
+    GameId gameId = malloc(sizeof(*gameId));
+    if (gameId == NULL) { return NULL; }
+    gameId->id1 = id1;
+    gameId->id2 = id2;
+    return gameId;
+}
+
+
+GameId copyGameId(GameId gameId) {
+    if (gameId == NULL) {return NULL; }
+    GameId gameIdCpy = malloc(sizeof(*gameIdCpy));
+    if (gameIdCpy == NULL) { return NULL; }
+    gameIdCpy->id1 = gameId->id1;
+    gameIdCpy->id2 = gameId->id2;
+    return gameIdCpy;
+}
+
+GameId freeGameId(GameId gameId) {
+    free(gameId);     
+}
+
+int cmpGameId(GameId gmid1, GameId gmid2) {
+    if ((gmid1->id1 == gmid2->id1 && gmid1->id2 == gmid2->id2) ||
+        (gmid1->id1 == gmid2->id2 && gmid1->id2 == gmid2->id1))
+        return 0;
+    return 1;
+}
+
+void changeGameId(GameId gmid, int id1, int id2) {
+    gmid->id1 = id1;
+    gmid->id2 = id2;
+}
+
+
+
+//////////////////////////////// Game //////////////////////////////////////////
+Game copyGame(Game game) {
+    Game gameCpy = malloc(sizeof(*gameCpy));
+    if (gameCpy == NULL) { return NULL; }
+    GameId gmidCpy = copyGameId(game->gameId);
+    if (gmidCpy == NULL) {
+        free(gameCpy);
+        return NULL;
+    }
+    gameCpy->id = gmidCpy;
+    gameCpy->player1_id = game->player1_id;
+    gameCpy->player2_id = game->player2_id;
+    gameCpy->winner = game->winner;
+    gameCpy->time = game->time;
+    return gameCpy;
+}
+
+
+void freeGame(Game game) {
+    if (game == NULL) { return; }
+    freeGameId(game->id);
+    free(game);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// SAMA'S BLOCK //////////////////////////////////
@@ -80,19 +144,29 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     Tour tour = mapGet(chess, tournament_id);
     if (tour == NULL) { return CHESS_TOURNAMENT_NOT_EXIST; }
     if (!tour->avtive) { return CHESS_TOURNAMENT_ENDED; }
-    char* game_id = generate_game_id(first_player, second_player);
-    if (mapContains(tour, game_id)) { return CHESS_GAME_ALREADY_EXIST; }
+    // check if game already exists
+    GameId game_id = createGameId(first_player, second_player);
+    if (game_id == NULL) { return CHESS_OUT_OF_MEMORY; }
+    if (mapContains(tour, game_id)) {
+        free(game_id); 
+        return CHESS_GAME_ALREADY_EXIST;
+    }
+    // check playtime validity
     if (!valid_playtime(play_time)) { return CHESS_INVALID_PLAY_TIME; }
+    // check if player exceeded games
     if (player_exceeded_games(tour, first_player || 
         player_exceeded_games(tour, second_player))) { return CHESS_EXCEEDED_GAMES; }
+    // all is good, create game 
     PlayerInTour player1_in_tour = getPlayerInTour(tour, first_player);
     PlayerInTour player2_in_tour = getPlayerInTour(tour, second_player);
     if (player1_in_tour == NULL || player2_in_tour == NULL) { return CHESS_OUT_OF_MEMORY; }
     Game game = createGame(game_id, first_player, second_player, winner, time);
     if (game == NULL) { return CHESS_OUT_OF_MEMORY; }
     MapResult res = mapPut(tour.games, game_id, game);
+    freeGameId(game_id);
+    freeGame(game);
     assert(res != MAP_NULL_ARGUMENT);
-    if (res == MAP_OUT_OF_MEMORY) { return NULL; }
+    if (res == MAP_OUT_OF_MEMORY) { return CHESS_OUT_OF_MEMORY; }
     update_players_info(chess, tour, first_player, second_player, winner, play_time);
     return CHESS_SUCCESS;
 
@@ -112,9 +186,9 @@ bool valid_playtime(int playtime) {
 
 bool player_exceeded_games(Tour tour, player_id) {
     assert(tour!=NULL);
-    if (!mapContains(tour->players, player_id)
+    if (!mapContains(tour->playerInTour, player_id)
         return false;
-    PlayerInTour player = mapGet(tour->players, player_id);
+    PlayerInTour player = mapGet(tour->playerInTour, player_id);
     assert(player!=NULL);
     if (player->max_games_per_player == tour->max_games_per_player)
         return true;
@@ -123,11 +197,11 @@ bool player_exceeded_games(Tour tour, player_id) {
 
 // if player doesn't already exist in tour, it adds it
 PlayerInTour getPlayerInTour(Tour tour, int player_id) {    
-    PlayerInTour player_in_tour = mapGet(tour.players, player_id);
+    PlayerInTour player_in_tour = mapGet(tour->playerInTour, player_id);
     if (player_in_tour == NULL) {
         player_in_tour = createPlayerInTour(player_id);
         if (player_in_tour == NULL) { return NULL; }
-        MapResult res = mapPut(tour.players, player_id, player_in_tour);
+        MapResult res = mapPut(tour->playerInTour, player_id, player_in_tour);
         assert(res != MAP_NULL_ARGUMENT);
         if (res == MAP_OUT_OF_MEMORY) { return NULL; }
         tour->num_players++;
@@ -147,7 +221,7 @@ PlayerInTour createPlayerInTour(int player_id) {
 }
 
 
-Game createGame(char* id, int player1, int player2, Winner winner, int time) {
+Game createGame(GameId id, int player1, int player2, Winner winner, int time) {
     Game game = malloc(sizeof(*game));
     if (game == NULL) { return NULL; }
     game->id = id;
@@ -163,9 +237,9 @@ Game createGame(char* id, int player1, int player2, Winner winner, int time) {
 void update_players_info(ChessSystem chess, Tour tour, int first_player, int second_player, Winner winner, int playtime) {
     assert(chess != NULL);
     assert(tour != NULL);
-    PlayerInTour player1_in_tour = mapGet(tour.players, first_player);
+    PlayerInTour player1_in_tour = mapGet(tour->playerInTour, first_player);
     assert(player1_in_tour != NULL);
-    PlayerInTour player2_in_tour = mapGet(tour.players, second_player);
+    PlayerInTour player2_in_tour = mapGet(tour->playerInTour, second_player);
     assert(player2_in_tour != NULL);
     Player player1_chess = mapGet(chess.players, first_player);
     assert(player1_chess != NULL);
@@ -202,14 +276,16 @@ void removePlayerFromTour(Tour tour, int player_id) {
             if (g.player1_id == player_id) {
                 g.winner = SECOND_PLAYER;
                 g.player1_id = 0;
+                changeGameId(g->id, 0, g->player2_id);
+
             }
             else if (g.player2_id == player_id) {
                 g.winner = FIRST_PLAYER;
                 g.player2_id = 0;
-            set_game_id(g);
+                changeGameId(g->id, g->player1_id, 0);
             }
     }
-    mapRemove(tour.players, player_id);
+    mapRemove(tour->playerInTour, player_id);
 }
 
 ChessResult chessRemovePlayer(ChessSystem chess, int player_id) {
@@ -247,10 +323,10 @@ PlayerInTour max_player(PlayerInTour player1, PlayerInTour player2) {
 
 PlayerInTour get_winner(Tour tour) {
     assert(tour != NULL);
-    assert(tour->players != NULL);
-    Player winner = mapGetFirst(players);
-    MAP_FOREACH(int, curr_player, players) {
-        update_points(player);
+    assert(tour->playerInTour != NULL);
+    Player winner = mapGetFirst(tour->playerInTour);
+    MAP_FOREACH(int, curr_player, tour->playerInTour) {
+        update_points(curr_player);
         winner = max_player(winner, curr_player); 
     }
     tour.winner = winner;
@@ -381,17 +457,18 @@ ChessSystem chessCreate(){
     ChessSystem chess = malloc(sizeof(*chess));
     if (chess==NULL) { return NULL; }
 
-     chess.games=mapCreate(copyDataElement,
+     chess->tours=mapCreate(copyDataElement,
                         copyKeyElement,
                         freeDataElement,
                         freeKeyElement,
                         compareKeyElements);
+     if (chess->tours == NULL) { return NULL; }
      chess.players=mapCreate(copyDataElement,
                         copyKeyElement,
                         freeDataElement,
                         freeKeyElement,
                         compareKeyElements);
-   return chess; 
+    return chess; 
 }
 
 
@@ -399,10 +476,9 @@ void chessDestroy(ChessSystem chess)
 {
     if(chess != NULL) 
     {
-    for (MapKeyElement tours_id = mapGetFirst(chess.tours); tours_id != NULL; tours_id = mapGetNext(chess.tour))
-        {
-            chessRemoveTournament(chess, tours_id); 
-        }
+    MAP_FOREACH(int, tours_id, chess->tours) {
+        chessRemoveTournament(chess, tours_id); 
+    }
     mapDestroy(chess.tours);
 
     for (MapKeyElement players_id = mapGetFirst(chess.players); players_id != NULL; players_id = mapGetNext(chess.players))
