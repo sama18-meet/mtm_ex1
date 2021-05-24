@@ -361,4 +361,141 @@ char* get_num_players(Tour tour) {
 //////////////////////////////// RAGHAD'S BLOCK //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+bool valid_id(int id) {
+    return id>0;
+}
+
+bool location_valid(const char* tournament_location)
+{
+    int counter=0,pointer=0;
+    for(int i=0; location[i]!='\0'; i++)
+    {
+        if(i==0 && location[i]<'A' ||  location[i]>'Z') return false;
+        if(i>0 &&  location[i]<'a' ||  location[i]>'z' || location[i]=' ') return false ;
+    }
+ return true;
+}
+
+
+ChessSystem chessCreate(){ 
+    ChessSystem chess = malloc(sizeof(*chess));
+    if (chess==NULL) { return NULL; }
+
+     chess.games=mapCreate(copyDataElement,
+                        copyKeyElement,
+                        freeDataElement,
+                        freeKeyElement,
+                        compareKeyElements);
+     chess.players=mapCreate(copyDataElement,
+                        copyKeyElement,
+                        freeDataElement,
+                        freeKeyElement,
+                        compareKeyElements);
+   return chess; 
+}
+
+
+void chessDestroy(ChessSystem chess)
+{
+    if(chess != NULL) 
+    {
+    for (MapKeyElement tours_id = mapGetFirst(chess.tours); tours_id != NULL; tours_id = mapGetNext(chess.tour))
+        {
+            chessRemoveTournament(chess, tours_id); 
+        }
+    mapDestroy(chess.tours);
+
+    for (MapKeyElement players_id = mapGetFirst(chess.players); players_id != NULL; players_id = mapGetNext(chess.players))
+        {
+           MapDataElement players_obj = mapGet(chess.players, players_id);
+           mapDestroy(chess.players); 
+        }
+    mapDestroy(chess.players); 
+    free(chess);
+    }
+}
+
+
+ChessResult chessAddTournament (ChessSystem chess, int tournament_id, int max_games_per_player, const char* tournament_location)
+{
+    if(!valid_id(tournament_id)) return CHESS_INVALID_ID; 
+    if(mapContains(chess.tours, tournament_id)) { return CHESS_TOURNAMENT_ALREADY_EXISTS; }
+    if(!location_valid(tournament_location)) { retrun CHESS_INVALID_LOCATION; }
+    if(!valid_id(max_games_per_player)) {return CHESS_INVALID_MAX_GAMES;}
+
+    Tour tour= malloc(sizeof(*tour));
+    if(tour==NULL) return NULL; //check the return
+    SetTour(tour, tournament_id, max_games_per_player, tournament_location);
+    mapPut(chess.tours, tournament_id, tour);
+}
+
+
+Tour SetTour(Tour tour, int tournament_id, int max_games_per_player, const char* tournament_location)
+{
+    tour.id= tournament_id;
+    tour.location= tournament_location;
+    tour.winner=NULL; //if NULL?? 
+    tour.max_games_per_player=max_games_per_player;
+    tour.active=false; // ?????
+    tour.games=mapCreate(copyDataElement,
+                        copyKeyElement,
+                        freeDataElement,
+                        freeKeyElement,
+                        compareKeyElements);
+    tour.playerInTour=mapCreate(copyDataElement,
+                        copyKeyElement,
+                        freeDataElement,
+                        freeKeyElement,
+                        compareKeyElements);
+    tour.num_players = 0;
+    return tour;
+}
+
+
+int calc_level(Player player)
+{
+   return (6*(player.num_wins))-(10*(player.num_losses))+(2*(player.num_draws))/((player.num_draws)+(player.num_losses)+(player.num_wins));   
+}
+
+ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
+{
+    if(!valid_id(tournament_id)) return CHESS_INVALID_ID; 
+    if(!mapContains(chess.tours, tournament_id)) { return CHESS_TOURNAMENT_NOT_EXISTS; }
+    MapDataElement tour_obj=mapGet(chess.tours, tournament_id);
+    // make sure of the *t_obj
+
+    for (MapKeyElement player_id = mapGetFirst(*tour_obj.playerInTour); player_id != NULL; player_id = mapGetNext(*tour_obj.player))
+     {
+         MapDataElement currentPlayerData=mapGet(chess.tours.*tour_obj.playerInTour, player_id);
+         MapDataElement Tot_Player_data=mapGet(chess.players, player_id);
+        *(*int)(Total_player_data.num_wins)-=*(*int)(currentPlayerData.num_wins);
+        *(*int)(Total_player_data.num_losses)-=*(*int)(currentPlayerData.num_losses);
+        *(*int)(Total_player_data.num_draws)-=*(*int)(currentPlayerData.num_draws);
+        *(*int)(Total_player_data.level)=calc_level(Tot_Player_data);
+    }
+    mapDestroy(chess.tours.*tour_obj.games);
+    mapDestroy(chess.tours.*tour_obj.playerInTour);
+    free(tour);
+    mapRemove(chess.tours, tournament_id);
+}
+
+
+
+ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
+{
+
+    levels_map=mapCreate(copyDataElement,
+             copyKeyElement,
+             freeDataElement, 
+             freeKeyElement,
+             compareKeyElements);
+
+    MapKeyElement player_key = mapGetFirst(chess.players);
+
+    for (MapDataElement player_data=mapGet(chess.players, player_key); player_data != NULL; player_data = mapGetNext(chess.player))
+    {
+        mapPut(levels_map, player_key, chess.players.player_data.level); // *player_data.level /&player_data.level
+    }
+    // no printing emplemnted
+}
 
