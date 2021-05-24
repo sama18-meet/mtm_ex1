@@ -33,22 +33,22 @@ Tour copyTour(Tour tour)
 Tour CreateTour(int tournament_id, int max_games_per_player, const char* tournament_location)
 {
     Tour tour= malloc(sizeof(*tour));
-    if(tour==NULL) return NULL; //check the return
+    if(tour==NULL) return NULL; 
     tour->id= tournament_id;
     tour->location= tournament_location;
     tour->winner=0; //if NULL?? 
     tour->max_games_per_player=max_games_per_player;
     tour->active=false; 
-    tour->games=mapCreate(copyDataElement,
-                        copyKeyElement,
-                        freeDataElement,
-                        freeKeyElement,
-                        compareKeyElements);
-    tour->playerInTour=mapCreate(copyDataElement,
-                        copyKeyElement,
-                        freeDataElement,
-                        freeKeyElement,
-                        compareKeyElements);
+    tour->games=mapCreate(copyGame,
+                        copyInt,
+                        freeGame,
+                        freeInt,
+                        cmpGameId);
+    tour->playerInTour=mapCreate(copyPlayerInTour,
+                        copyInt,
+                        freePlayerInTour,
+                        freeInt,
+                        compareInts);
     tour->num_players = 0;
     return tour;
 }
