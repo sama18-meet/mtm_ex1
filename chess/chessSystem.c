@@ -193,9 +193,8 @@ bool location_valid(const char* tournament_location)
     }
  return true;
 }
-
-
-ChessSystem chessCreate(){ 
+    
+   ChessSystem chessCreate(){ 
     ChessSystem chess = malloc(sizeof(*chess));
     if (chess==NULL) { return NULL; }
 
@@ -223,24 +222,18 @@ ChessSystem chessCreate(){
 void chessDestroy(ChessSystem chess)
 {
     if(chess != NULL) 
-    {
-    for (MapKeyElement tours_id = mapGetFirst(chess->tours); tours_id != NULL; tours_id = mapGetNext(chess->tour))
+    {   
+        MAP_FOREACH_INTERNAL(MapKeyElement, iterator, chess->tours)
         {
-            //FOREACH (casting to int here )
-            chessRemoveTournament(chess, tours_id); 
-        }
-    mapDestroy(chess.tours);
+           chessRemoveTournament(chess, tours_id); 
+        }       
+        mapDestroy(chess->tours);
+        mapDestroy(chess->players);    
+    }
 
-    for (MapKeyElement players_id = mapGetFirst(chess.players); players_id != NULL; players_id = mapGetNext(chess.players))
-        {
-           MapDataElement players_obj = mapGet(chess.players, players_id);
-           mapDestroy(chess.players); 
-        }
-    mapDestroy(chess.players); 
     free(chess);
     }
 }
-
 
 ChessResult chessAddTournament (ChessSystem chess, int tournament_id, int max_games_per_player, const char* tournament_location)
 {
@@ -249,40 +242,53 @@ ChessResult chessAddTournament (ChessSystem chess, int tournament_id, int max_ga
     if(!location_valid(tournament_location)) { retrun CHESS_INVALID_LOCATION; }
     if(!valid_id(max_games_per_player)) {return CHESS_INVALID_MAX_GAMES;}
 
-    CreateTour(tour, tournament_id, max_games_per_player, tournament_location);
-    mapPut(chess->tours, tournament_id, tour);
+    if(CreateTour(tournament_id, max_games_per_player, tournament_location)==NULL) 
+    {
+        return NULL;
+    }
+    if(mapPut(chess->tours, tournament_id, tour)==NULL)
+    {
+        return NULL;
+    }
     freeTour(tour);
 }
 
-
 ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
 {
-    if(!valid_id(tournament_id)) return CHESS_INVALID_ID; 
-    if(!mapContains(chess->tours, tournament_id)) { return CHESS_TOURNAMENT_NOT_EXISTS; }
-   
-   
-    MapDataElement tour_obj=mapGet(chess->tours, tournament_id);
-    if(tour_obj==NULL) return NULL;
-    freeTour(tour_obj;
-    free(tour_obj);
-
-    // make sure of the *t_obj
-    for (MapKeyElement player_id = mapGetFirst(*tour_obj.playerInTour); player_id != NULL; player_id = mapGetNext(*tour_obj.player))
-     {
-         MapDataElement currentPlayerData=mapGet(chess.tours.*tour_obj.playerInTour, player_id);
-         MapDataElement Tot_Player_data=mapGet(chess.players, player_id);
-        *(*int)(Total_player_data.num_wins)-=*(*int)(currentPlayerData.num_wins);
-        *(*int)(Total_player_data.num_losses)-=*(*int)(currentPlayerData.num_losses);
-        *(*int)(Total_player_data.num_draws)-=*(*int)(currentPlayerData.num_draws);
-        *(*int)(Total_player_data.level)=calc_level(Tot_Player_data);
+    if(!valid_id(tournament_id))
+    {
+        return CHESS_INVALID_ID; 
     }
-    mapDestroy(chess.tours.*tour_obj.games);
-    mapDestroy(chess.tours.*tour_obj.playerInTour);
-    free(tour);
-    mapRemove(chess.tours, tournament_id);
+    if(!mapContains(chess->tours, tournament_id))
+    { 
+        return CHESS_TOURNAMENT_NOT_EXISTS; 
+    }
+   
+    MapDataElement tour_obj=mapGet(chess->tours, tournament_id); 
+    assert(tour_obj!=NULL);
+    for(MapKeyElement player_id = mapGetFirst(tour_obj->playerInTour); player_id != NULL; player_id = mapGetNext(tour_obj->playerInTour))
+    {
+        MapDataElement currentPlayerData=mapGet(tour_obj->playerInTour, player_id);
+        if(currentPlayerData==NULL)
+        {
+            return NULL;
+        }
+        MapDataElement Tot_Player_data=mapGet(chess->players, player_id);
+        if(Tot_Player_data==NULL)
+        {
+            return NULL;
+        }
+        *(*int)(Tot_player_data->num_wins)-=*(*int)(currentPlayerData->num_wins);
+        *(*int)(Tot_player_data->num_losses)-=*(*int)(currentPlayerData->num_losses);
+        *(*int)(Tot_player_data->num_draws)-=*(*int)(currentPlayerData->num_draws);
+        calc_level(Tot_Player_data);
+    }
+    mapDestroy(tour_obj->games);
+    mapDestroy(tour_obj->playerInTour);
+    freeTour(tour_obj);
+    mapRemove(chess->tours, tournament_id);
 }
-
-
+    
 ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
 {
     if (chess == NULL) {
