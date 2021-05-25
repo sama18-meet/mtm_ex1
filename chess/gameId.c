@@ -16,19 +16,27 @@ GameId gameIdCreate(int id1, int id2) {
 }
 
 
-GameId gameIdCopy(GameId gameId) {
+GameId gameIdCopy(GameId game_id) {
     if (gameId == NULL) {
         return NULL;
     }
-    GameId gameIdCopy = gameIdCreate(gameId->id1, gameId->id2);
-    if (gameIdCopy == NULL) {
+    GameId game_id_copy = gameIdCreate(game_id->id1, game_id->id2);
+    if (game_id_copy == NULL) {
         return NULL;
     }
-    return gameIdCopy;
+    return game_id_copy;
 }
 
-GameId gameIdFree(GameId gameId) {
+void* gameIdCopyToVoid(void* game_id) {
+    return (void*)gameIdCopy((GameId) game_id);
+}
+
+void gameIdFree(GameId gameId) {
     free(gameId);     
+}
+
+void gameIdFreeVoid(void* game_id) {
+    gameIdFree((Game)game_id);     
 }
 
 int gameIdCmp(GameId gameId1, GameId gameId2) {
@@ -38,9 +46,14 @@ int gameIdCmp(GameId gameId1, GameId gameId2) {
     return 1;
 }
 
+int gameIdCmpVoid(void* gameId1, void* gameId2) {
+    return gameIdCmp((GameId) gameId1, (GameId) gameId2);
+}
+
 void gameIdChange(GameId gameId, int newId1, int newId2) {
     assert(gameId != NULL);
     gameId->id1 = newId1;
     gameId->id2 = newId2;
 }
+
 
