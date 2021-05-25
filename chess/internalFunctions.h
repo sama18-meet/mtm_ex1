@@ -13,5 +13,6 @@ char* double_to_str(double d, int num_digits);
 bool valid_id(int id);
 bool location_valid(const char* tournament_location);
 bool attempt_put(FILE* file, char* str, char* id, char* level);
-
+char* int_to_str(int num);
+char* double_to_str(double doub);
 #endif
