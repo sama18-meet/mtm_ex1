@@ -1,6 +1,7 @@
 #ifndef _INTKEY_H
 #define _INTKEY_H
 
+#include "map.h"
 
 MapKeyElement copyKeyInt(MapKeyElement n);
 

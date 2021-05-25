@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include "intKey.h"
+#include "stdlib.h"
 
 MapKeyElement copyKeyInt(MapKeyElement n)
 {
