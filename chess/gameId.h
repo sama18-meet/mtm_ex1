@@ -2,13 +2,13 @@
 #define _GAMEID_H
 
 #include <stdio.h>
-#include <chessSystem.h>
 
-typedef struct game_id_t *GameId;
-GameId createGameId(int id1, int id2);
-GameId copyGameId(GameId gameId);
-GameId freeGameId(GameId gameId);
-int cmpGameId(GameId gmid1, GameId gmid2);
-void changeGameId(GameId gmid, int id1, int id2);
+typedef struct GameId_t *GameId;
+
+GameId gameIdCreate(int id1, int id2);
+GameId gameIdCopy(GameId gameId);
+GameId gameIdFree(GameId gameId);
+int gameIdCmp(GameId gameId1, GameId gameId2);
+void gameIdChange(GameId gameId, int newId1, int newId2);
 
 #endif
