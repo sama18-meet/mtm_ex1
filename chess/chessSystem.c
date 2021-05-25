@@ -285,15 +285,52 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
 
 ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
 {
-    if (chess == NULL) {
+    if (chess == NULL || file == NULL) {
         return CHESS_NULL_ARGUMENT;
     }
     assert(chess->players != NULL);
     int num_players = mapGetSize(chess->players);
-    assert(num_payers != -1);
-    Player sorted_players = malloc(sizeof(sorted_player)*mapGetSize(chess->players));
-    get_sorted_players(sorted_players, chess->players);
+    Player sorted_players = get_sorted_players(chess->players);
+    if (sorted_players == NULL) {
+        return CHESS_OUT_OF_MEMORY;
+    }
+    for (; num_players>0; num_players--) {
+        char* id = int_to_str(player->id); 
+        if (id == NULL) {
+            return CHESS_OUT_OF_MEMORY;
+        }
+        char* level = int_to_str(player->level); 
+        if (level == NULL) {
+            free(id);
+            return CHESS_OUT_OF_MEMORY;
+        }
+        if (!attempt_put(file, id, id, level)) {
+            return CHESS_SAVE_FAILURE;
+        }
+         if (!attempt_put(file, " ", id, level)) {
+            return CHESS_SAVE_FAILURE;
+        }
+         if (!attempt_put(file, level, id, level)) {
+            return CHESS_SAVE_FAILURE;
+        }
+        if (!attempt_put(file, "\n", id, level)) {
+            return CHESS_SAVE_FAILURE;
+        }
+        free(id);
+        free(level);
 
+    }
+    fclose(file);
     free(sorted_players);
-    // no printing emplemnted
 }
+
+bool attempt_put(FILE* file, char* str, char* id, char* level) {
+    if (fputs(file, str) == EOF) {
+        free(id);
+        free(level);
+        fclose(file);
+        return false;
+    }
+    return true;
+}
+
