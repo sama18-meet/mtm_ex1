@@ -1,30 +1,24 @@
 #include "game.h"
-struct Game {
+struct Game_t {
     GameId id;
     int player1_id;
     int player2_id;
     Winner winner;
     int time;
-} *Game;
+};
 
-Game copyGame(Game game) {
-    Game gameCpy = createGame(game->player1, game->player2, game->winner, game->time);
-    if (gameCpy == NULL) {
+Game gameCreate(int player1_id, int player2_id, Winner winner, int time) {
+    Game game = malloc(sizeof(*game));
+    if (game == NULL) {
         return NULL;
     }
-    return gameCpy;
-}
-
-Game createGame(int player1, int player2, Winner winner, int time) {
-    Game game = malloc(sizeof(*game));
-    if (game == NULL) { return NULL; }
-    GameId gmid = createGameId(player1, palyer2);
-    if (gmid == NULL) {
+    GameId game_id = gameIdCreate(player1_id, palyer2_id);
+    if (game_id == NULL) {
         free(game);
         return NULL;
     }
-    game->id = gmid;
-    game->player1_id = player1;
+    game->id = game_id;
+    game->player1_id = player1_id;
     game->player2_id = player2_id;
     game->winner = winner;
     game->time = time;
@@ -32,8 +26,19 @@ Game createGame(int player1, int player2, Winner winner, int time) {
 }
 
 
-void freeGame(Game game) {
-    if (game == NULL) { return; }
-    freeGameId(game->id);
+Game gameCopy(Game game) {
+    Game game_copy = gameCreate(game->player1, game->player2, game->winner, game->time);
+    if (game_copy == NULL) {
+        return NULL;
+    }
+    return game_copy;
+}
+
+
+void gameFree(Game game) {
+    if (game == NULL) {
+        return;
+    }
+    gameIdFree(game->id);
     free(game);
 }
