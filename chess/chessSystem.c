@@ -112,9 +112,7 @@ ChessResult chessEndTournament (ChessSystem chess, int tournament_id) {
     if (tour == NULL) { return CHESS_TOURNAMENT_NOT_EXIST; }
     if (!tour.active) { return CHESS_TOURNAMENT_ENDED; }
     if (mapGetSize(tour.games) == 0) { return CHESS_N0_GAMES; }
-    PlayerInTour winner = get_winner(tour);
-    if (winner == NULL) { return CHESS_OUT_OF_MEMORY; }
-    tour->winner = winner;
+    set_winner(tour);
     tour->active = false;
     return CHESS_SUCCESS;
 }
@@ -125,7 +123,7 @@ ChessResult chessEndTournament (ChessSystem chess, int tournament_id) {
 double chessCalculateAveragePlayTime (ChessSystem chess, int player_id, ChessResult* chess_result) {
     if (chess == NULL) { return CHESS_NULL_ARGUMENT; }
     if (!valid_player_id(player_id)) { return CHESS_INVALID_ID; }
-    Player player = mapGet(chess.players, player_id);
+    Player player = mapGet(chess->players, player_id);
     if (player == NULL) { return CHESS_PLAYER_NOT_EXIST; }
     return player->playtime/(player->num_wins + player->num_losses + player->num_draws);
 }
@@ -163,6 +161,7 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
 
 typedef char* (*str_returning_func)(Tour);
 ChessResult put_to_file(*str_returning_func func, FILE* file, Tour tour) {
+    assert(tour!=NULL);
     char* out = func(tour);
     if (out == NULL) { return CHESS_OUT_OF_MEMORY; }
     int fputs_out = fputs(file, out);
@@ -237,6 +236,10 @@ void chessDestroy(ChessSystem chess)
 
 ChessResult chessAddTournament (ChessSystem chess, int tournament_id, int max_games_per_player, const char* tournament_location)
 {
+    if(chess==NULL || tournament_location==NULL)
+    {
+        return CHESS_NULL_ARGUMENT;
+    }
     if(!valid_id(tournament_id)) return CHESS_INVALID_ID; 
     if(mapContains(chess->tours, tournament_id)) { return CHESS_TOURNAMENT_ALREADY_EXISTS; }
     if(!location_valid(tournament_location)) { retrun CHESS_INVALID_LOCATION; }
