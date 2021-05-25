@@ -1,4 +1,9 @@
+#include <stdlib.h>
 #include "game.h"
+#include "gameId.h"
+
+
+
 struct Game_t {
     GameId id;
     int player1_id;
@@ -12,7 +17,7 @@ Game gameCreate(int player1_id, int player2_id, Winner winner, int time) {
     if (game == NULL) {
         return NULL;
     }
-    GameId game_id = gameIdCreate(player1_id, palyer2_id);
+    GameId game_id = gameIdCreate(player1_id, player2_id);
     if (game_id == NULL) {
         free(game);
         return NULL;
@@ -27,7 +32,7 @@ Game gameCreate(int player1_id, int player2_id, Winner winner, int time) {
 
 
 Game gameCopy(Game game) {
-    Game game_copy = gameCreate(game->player1, game->player2, game->winner, game->time);
+    Game game_copy = gameCreate(game->player1_id, game->player2_id, game->winner, game->time);
     if (game_copy == NULL) {
         return NULL;
     }
@@ -42,3 +47,4 @@ void gameFree(Game game) {
     gameIdFree(game->id);
     free(game);
 }
+
