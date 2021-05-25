@@ -1,73 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "playerInTour.h"
 #define POINTS_PER_WIN 2
 #define POINTS_PER_LOSS 0
 #define POINTS_PER_DDRAW 1
 
-struct PlayerInTour {
+struct PlayerInTour_t {
     int id;
-    int num_losses = 0;
-    int num_wins = 0;
-    int num_draws = 0;
-    int time=0;
+    int num_losses;
+    int num_wins;
+    int num_draws;
+    int time;
     int points;
-}
-
-void freePlayerInTour(PlayerInTour player)
-{
-    free(player);
-}
-
-PlayerInTour copyPlayerInTour(PalyerInTour playerInTour)
-{
-    PlayerInTour CopyOfplayerInTour=malloc(sizeof(*CopyOfplayerInTour));
-    if(CopyOfplayerInTour==NULL) return NULL;
-    CopyOfplayerInTour->id=playerInTour->id;
-    CopyOfplayerInTour->num_losses=playerInTour->num_losses;
-    CopyOfplayerInTour->num_wins=playerInTour->num_wins;
-    CopyOfplayerInTour->num_draws=playerInTour->num_draws;
-    CopyOfplayerInTour->time=playerInTour->time;
-    CopyOfplayerInTour->points=playerInTour->points;
-    return copyOfPlayerInTour;
-}
-
-// if player doesn't already exist in tour, it adds it
-PlayerInTour getPlayerInTour(Tour tour, int player_id) {    
-    PlayerInTour player_in_tour = mapGet(tour->playerInTour, player_id);
-    if (player_in_tour == NULL) {
-        player_in_tour = createPlayerInTour(player_id);
-        if (player_in_tour == NULL) { return NULL; }
-        MapResult res = mapPut(tour->playerInTour, player_id, player_in_tour);
-        assert(res != MAP_NULL_ARGUMENT);
-        if (res == MAP_OUT_OF_MEMORY)
-        {
-            freePlayerInTour(player_in_tour);
-            return NULL;
-        }
-        freePlayerInTour(player_in_tour);
-        tour->num_players++;
-    }
-    return mapGet(tour->playerInTour, player_id);
-}
+};
 
 PlayerInTour createPlayerInTour(int player_id) {
-    PlayerInTour player = malloc(sizeof(*player));
-    if (player == NULL) { return NULL; }
-    player->id = player_id;
-    player->num_losses = 0;
-    player->num_wins = 0;
-    player->num_draws = 0;
-    player->time=0;
-    player->points = 0;
-    return player;
+    PlayerInTour player_in_tour = malloc(sizeof(*player_in_tour));
+    if (player_in_tour == NULL) {
+        return NULL;
+    }
+    player_in_tour->id = player_id;
+    player_in_tour->num_losses = 0;
+    player_in_tour->num_wins = 0;
+    player_in_tour->num_draws = 0;
+    player_in_tour->time=0;
+    player_in_tour->points = 0;
+    return player_in_tour;
 }
 
-
-void update_points(PlayerInTour player) {
-    assert(player != NULL);
-    int sum = player->num_wins*POINTS_PER_WIN
-              + player->num_losses*POINTS_PER_LOSS
-              + player->num_draws*POINTS_PER_DDRAW;
-    player->points = sum;
+void playerInTourFree(PlayerInTour player_in_tour) {
+    free(player_in_tour);
 }
 
+PlayerInTour playerInTourCopy(PlayerInTour player_in_tour) {
+    PlayerInTour player_in_tour_copy=malloc(sizeof(*player_in_tour_copy));
+    if(player_in_tour_copy==NULL) {
+        return NULL;
+    }
+    player_in_tour_copy->id=player_in_tour->id;
+    player_in_tour_copy->num_losses=player_in_tour->num_losses;
+    player_in_tour_copy->num_wins=player_in_tour->num_wins;
+    player_in_tour_copy->num_draws=player_in_tour->num_draws;
+    player_in_tour_copy->time=player_in_tour->time;
+    player_in_tour_copy->points=player_in_tour->points;
+    return player_in_tour_copy;
+}
+
+void playerInTourUpdatePoints(PlayerInTour player_in_tour) {
+    assert(player_in_tour != NULL);
+    int sum = player_in_tour->num_wins*POINTS_PER_WIN
+              + player_in_tour->num_losses*POINTS_PER_LOSS
+              + player_in_tour->num_draws*POINTS_PER_DDRAW;
+    player_in_tour->points = sum;
+}
 

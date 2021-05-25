@@ -121,6 +121,26 @@ bool player_exceeded_games(Tour tour, int player_id) {
 }
 
 
+// if player doesn't already exist in tour, it adds it
+PlayerInTour getPlayerInTour(Tour tour, int player_id) {    
+    PlayerInTour player_in_tour = mapGet(tour->playerInTour, player_id);
+    if (player_in_tour == NULL) {
+        player_in_tour = createPlayerInTour(player_id);
+        if (player_in_tour == NULL) { return NULL; }
+        MapResult res = mapPut(tour->playerInTour, player_id, player_in_tour);
+        assert(res != MAP_NULL_ARGUMENT);
+        if (res == MAP_OUT_OF_MEMORY)
+        {
+            freePlayerInTour(player_in_tour);
+            return NULL;
+        }
+        freePlayerInTour(player_in_tour);
+        tour->num_players++;
+    }
+    return mapGet(tour->playerInTour, player_id);
+}
+
+
 void removePlayerFromTour(Tour tour, int player_id)
  {
     assert(tour != NULL);
