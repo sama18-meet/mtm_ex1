@@ -7,12 +7,12 @@
 #include "tournament.h"
 #include "playerInTour.h"
 
-typedef struct tour_t *Tour;
+typedef struct Tour_t *Tour;
 
 void freeTour(Tour tour);
-Tour copyTour(Tour tour);
+Tour tourCopy(Tour tour);
+void* tourCopyToVoid(void* tour);
 Tour CreateTour(int tournament_id, int max_games_per_player, const char* tournament_location);
-PlayerInTour max_player(PlayerInTour player1, PlayerInTour player2);
 void set_winner(Tour tour);
 bool player_exceeded_games(Tour tour, int player_id);
 PlayerInTour getPlayerInTour(Tour tour, int player_id);
