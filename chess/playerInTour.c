@@ -7,6 +7,7 @@ struct PlayerInTour {
     int num_losses = 0;
     int num_wins = 0;
     int num_draws = 0;
+    int time=0;
     int points;
 }
 
@@ -23,6 +24,7 @@ PlayerInTour copyPlayerInTour(PalyerInTour playerInTour)
     CopyOfplayerInTour->num_losses=playerInTour->num_losses;
     CopyOfplayerInTour->num_wins=playerInTour->num_wins;
     CopyOfplayerInTour->num_draws=playerInTour->num_draws;
+    CopyOfplayerInTour->time=playerInTour->time;
     CopyOfplayerInTour->points=playerInTour->points;
     return copyOfPlayerInTour;
 }
@@ -40,9 +42,10 @@ PlayerInTour getPlayerInTour(Tour tour, int player_id) {
             freePlayerInTour(player_in_tour);
             return NULL;
         }
+        freePlayerInTour(player_in_tour);
         tour->num_players++;
     }
-    return player_in_tour;
+    return mapGet(tour->playerInTour, player_id);
 }
 
 PlayerInTour createPlayerInTour(int player_id) {
@@ -52,6 +55,7 @@ PlayerInTour createPlayerInTour(int player_id) {
     player->num_losses = 0;
     player->num_wins = 0;
     player->num_draws = 0;
+    player->time=0;
     player->points = 0;
     return player;
 }
