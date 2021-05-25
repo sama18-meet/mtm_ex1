@@ -1,5 +1,7 @@
 #include <internalFunctions.h>
 
+#define MAX_DIGITS 15
+
 
 bool valid_playtime(int playtime) {
     return playtime >= 0;
@@ -81,4 +83,16 @@ bool attempt_put(FILE* file, char* str, char* id, char* level) {
         return false;
     }
     return true;
-}    
+}
+
+char* int_to_str(int num) {
+    char* str = malloc(sizeof(*str)* MAX_DIGITS);
+    sprintf(str, "%d", n);
+    return str;
+}
+
+char* double_to_str(double doub) {
+    char* str = malloc(sizeof(*str)* MAX_DIGITS);
+    sprintf(str, "%lf", n);
+    return str;
+}
