@@ -2,6 +2,7 @@
 #define NUM_LOSSES_WEIGHT -10
 #define NUM_DRAWS_WEIGHT 2
 
+
 struct Player {
     int id;
     int num_losses;
