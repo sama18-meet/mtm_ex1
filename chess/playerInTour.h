@@ -35,10 +35,10 @@ PlayerInTour createPlayerInTour(int player_id) {
 
 void update_points(PlayerInTour player) {
     assert(player != NULL);
-    int sum = player->num_wins*POINTS_PER_WIN
-              + player->num_losses*POINTS_PER_LOSS
-              + player->num_draws*POINTS_PER_DDRAW;
+    int sum = (player->num_wins)*POINTS_PER_WIN
+              + (player->num_losses)*POINTS_PER_LOSS
+              + (player->num_draws)*POINTS_PER_DRAW;
     player->points = sum;
 }
 
-
+#endif

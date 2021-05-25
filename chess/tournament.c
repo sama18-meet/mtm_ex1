@@ -1,3 +1,4 @@
+#include "tournament.h"
 struct Tour {
     int id;
     const char* location;

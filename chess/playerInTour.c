@@ -1,3 +1,4 @@
+#include "playerInTour.h"
 #define POINTS_PER_WIN 2
 #define POINTS_PER_LOSS 0
 #define POINTS_PER_DDRAW 1

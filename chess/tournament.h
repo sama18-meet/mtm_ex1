@@ -2,7 +2,10 @@
 #define _TOURNAMENT_H
 
 #include <stdio.h>
-#include <chessSystem.h>
+#include <stdbool.h>
+#include "chessSystem.h"
+#include "tournament.h"
+#include "playerInTour.h"
 
 typedef struct tour_t *Tour;
 
@@ -15,4 +18,4 @@ bool player_exceeded_games(Tour tour, int player_id);
 void removePlayerFromTour(Tour tour, int player_id);
 char* get_winner_id(Tour tour);
 
-#enfif
+#endif

@@ -1,3 +1,4 @@
+#include "game.h"
 struct Game {
     GameId id;
     int player1_id;

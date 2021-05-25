@@ -1,4 +1,5 @@
-#include <map.h>
+#include "map.h"
+#include "chessSystem.h"
 #include <stdio.h>
 
 #define MAX_INT_DIGITS 10

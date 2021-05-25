@@ -1,3 +1,4 @@
+#include "player.h"
 #define NUM_WINS_WEIGHT 6
 #define NUM_LOSSES_WEIGHT -10
 #define NUM_DRAWS_WEIGHT 2
