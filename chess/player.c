@@ -1,5 +1,5 @@
 #include "player.h"
-
+#include "map.h"
 #include "ChessSystem.h"
 
 #include <stdlib.h>
@@ -24,6 +24,7 @@ void set_level(Player player)
     player->level=(NUM_WINS_WEIGHT*(player->num_wins))+(NUM_LOSSES_WEIGHT*(player->num_losses))+(NUM_DRAWS_WEIGHT*(player->num_draws))/(num_games);  
 }
 
+
 Player copyPlayer(Player player)
 {
     Player CopyOfplayer=malloc(sizeof(*CopyOfplayer));
@@ -37,10 +38,17 @@ Player copyPlayer(Player player)
     return CopyOfplayer;
 }
 
-#include "map.h"
+void* copyPlayerToVoid(void* player) {
+    return (void*) copyPlayer((Player) player);
+}
+
 void freePlayer(Player player)
 {
     free(player);
+}
+
+void freePlayerVoid(void* player) {
+    freePlayer((Player)player);
 }
 
 
