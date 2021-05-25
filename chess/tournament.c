@@ -1,7 +1,7 @@
 struct Tour {
     int id;
     const char* location;
-    Winner winner;
+    int winner_id;
     int max_games_per_player;
     bool active;
     Map games;
@@ -18,38 +18,67 @@ void freeTour(Tour tour)
 
 Tour copyTour(Tour tour)
 {
-    Tour CopyOfTour=malloc(sizeof(*CopyOfTour));
-    if(CopyOfTour==NULL) return NULL;
-    CopyOfTour->id=tour->id;
-    CopyOfTour->location=tour->location;
-    CopyOfTour->max_games_per_player=tour->max_games_per_player;
-    CopyOfTour->active=tour->active;
-    CopyOfTour->games=mapCopy(tour->games);
-    CopyOfTour->playerInTour=mapCopy(tour->playerInTour);
-    CopyOfTour->num_players=tour->num_players;
- return CopyOfTour;
+    if(tour==NULL) 
+    {
+        return NULL;
+    }
+
+    Tour tourCpy= malloc(sizeof(*tour));
+    if(tourCpy==NULL) return NULL; 
+    tourCpy->id= tour->id;
+    tourCpy->location= tour->location;
+    tourCpy->winner_id=tour->winner_id; 
+    tourCpy->max_games_per_player=tour->max_games_per_player;
+    tourCpy->active=tour->active; 
+    tourCpy->num_players = tour->num_players;
+    tourCpy->games=mapCopy(tour->games);
+    if(tourCpy->games==NULL)
+    {
+        free(tourCpy);
+        return NULL;
+    }
+    tourCpy->playerInTour=mapCopy(tour->PlayerInTour);
+    if(tourCpy->playerInTour==NULL)
+    {
+        free(tourCpy);
+        mapDestroy(tourCpy->games);
+        return NULL;
+    }
+    return tourCpy;
 }
 
 Tour CreateTour(int tournament_id, int max_games_per_player, const char* tournament_location)
 {
+    assert(tournament_location!=NULL);
     Tour tour= malloc(sizeof(*tour));
     if(tour==NULL) return NULL; 
     tour->id= tournament_id;
     tour->location= tournament_location;
-    tour->winner=0; //if NULL?? 
+    tour->winner_id=-1;
     tour->max_games_per_player=max_games_per_player;
     tour->active=false; 
+    tour->num_players = 0;
     tour->games=mapCreate(copyGame,
-                        copyInt,
+                        copyGameId,
                         freeGame,
-                        freeInt,
+                        freeGameId,
                         cmpGameId);
+    if(tour->games==NULL)
+    {
+        free(tour);
+        return NULL;
+    }
     tour->playerInTour=mapCreate(copyPlayerInTour,
                         copyInt,
                         freePlayerInTour,
                         freeInt,
                         compareInts);
-    tour->num_players = 0;
+     if(tour->PlayerInTour==NULL)
+    {
+        free(tour);
+        mapDestroy(tour->games);
+        return NULL;
+    }
     return tour;
 }
 
@@ -63,50 +92,61 @@ PlayerInTour max_player(PlayerInTour player1, PlayerInTour player2) {
     return (player1->id < player2->id) : player1 : player2;
 }
 
-PlayerInTour get_winner(Tour tour) {
+void set_winner(Tour tour) {
     assert(tour != NULL);
     assert(tour->playerInTour != NULL);
-    Player winner = mapGetFirst(tour->playerInTour);
+    PlayerInTour winner = mapGetFirst(tour->playerInTour);
     MAP_FOREACH(int, curr_player, tour->playerInTour) {
         update_points(curr_player);
         winner = max_player(winner, curr_player); 
     }
-    tour.winner = winner;
-    return winner;
+    tour->winner_id = winner->id;
 }
 
-bool player_exceeded_games(Tour tour, player_id) {
+bool player_exceeded_games(Tour tour, int player_id) {
     assert(tour!=NULL);
     if (!mapContains(tour->playerInTour, player_id)
+    {
         return false;
+    }
     PlayerInTour player = mapGet(tour->playerInTour, player_id);
     assert(player!=NULL);
-    if (player->max_games_per_player == tour->max_games_per_player)
+    int num_games = player->num_wins + player->num_losses + player->num_draws;
+    assert(num_games <= tour->max_games_per_player);
+    if (num_games == tour->max_games_per_player) {
         return true;
+    }
     return false;
 }
 
 
-void removePlayerFromTour(Tour tour, int player_id) {
-    if (tour.active) {
-        MAP_FOREACH(Game, g, tour.games) {
-            if (g.player1_id == player_id) {
-                g.winner = SECOND_PLAYER;
-                g.player1_id = 0;
-                changeGameId(g->id, 0, g->player2_id);
+void removePlayerFromTour(Tour tour, int player_id)
+ {
+    assert(tour != NULL);
+    MAP_FOREACH(Game, g, tour->games)
+    {
+        if (g->player1_id == player_id) {
+            g->player1_id = 0;
+            changeGameId(g->id, 0, g->player2_id);
+            if (tour->active) {
+                g->winner = SECOND_PLAYER;
+            }
 
+        }
+        else if (g->player2_id == player_id) 
+        {
+            g->player2_id = 0;
+            changeGameId(g->id, g->player1_id, 0);
+            if (tour->active) {
+                g->winner = FIRST_PLAYER;
             }
-            else if (g.player2_id == player_id) {
-                g.winner = FIRST_PLAYER;
-                g.player2_id = 0;
-                changeGameId(g->id, g->player1_id, 0);
-            }
+        }
     }
     mapRemove(tour->playerInTour, player_id);
 }
 
 char* get_winner_id(Tour tour) {
-    return int_to_str(winner_id);
+    return int_to_str(tour->winner_id);
 }
 char* get_longest_game_time(Tour tour) {
     int longes_game_time = -1;
