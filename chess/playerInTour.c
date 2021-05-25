@@ -18,13 +18,13 @@ void freePlayerInTour(PlayerInTour player)
 PlayerInTour copyPlayerInTour(PalyerInTour playerInTour)
 {
     PlayerInTour CopyOfplayerInTour=malloc(sizeof(*CopyOfplayerInTour));
-    if(CopyOfplayerInTour=NULL) return NULL;
+    if(CopyOfplayerInTour==NULL) return NULL;
     CopyOfplayerInTour->id=playerInTour->id;
     CopyOfplayerInTour->num_losses=playerInTour->num_losses;
     CopyOfplayerInTour->num_wins=playerInTour->num_wins;
     CopyOfplayerInTour->num_draws=playerInTour->num_draws;
     CopyOfplayerInTour->points=playerInTour->points;
-    return copyPlayerInTour;
+    return copyOfPlayerInTour;
 }
 
 // if player doesn't already exist in tour, it adds it
