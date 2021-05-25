@@ -2,8 +2,7 @@
 #define _GAME_H
 
 #include <stdio.h>
-#include <chessSystem.h>
-
+#include "chessSystem.h"
 
 typedef struct Game_t *Game;
 
