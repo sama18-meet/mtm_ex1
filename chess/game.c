@@ -12,6 +12,32 @@ struct Game_t {
     int time;
 };
 
+GameId gameGetId(Game game) {
+    return game->id;
+}
+int gameGetPlayer1Id(Game game) {
+    return game->player1_id;
+}
+int gameGetPlayer2Id(Game game) {
+    return game->player2_id;
+}
+Winner gameGetWinner(Game game) {
+    return game->winner;
+}
+int gameGetTime(Game game) {
+    return game->time;
+}
+
+void gameSetPlayer1Id(Game game, int id) {
+    game->player1_id = id;
+}
+void gameSetPlayer2Id(Game game, int id) {
+    game->player2_id = id;
+}
+void gameSetWinner(Game game, Winner winner) {
+    game->winner = winner;
+}
+
 Game gameCreate(int player1_id, int player2_id, Winner winner, int time) {
     Game game = malloc(sizeof(*game));
     if (game == NULL) {
@@ -39,6 +65,9 @@ Game gameCopy(Game game) {
     return game_copy;
 }
 
+void* gameCopyToVoid(void* game) {
+    return (void*) gameCopy((Game)game);
+}
 
 void gameFree(Game game) {
     if (game == NULL) {
@@ -47,4 +76,9 @@ void gameFree(Game game) {
     gameIdFree(game->id);
     free(game);
 }
+
+void gameFreeVoid(void* game) {
+    free((game)game);
+}
+
 
