@@ -1,3 +1,7 @@
+#define NUM_WINS_WEIGHT 6
+#define NUM_LOSSES_WEIGHT -10
+#define NUM_DRAWS_WEIGHT 2
+
 struct Player {
     int id;
     int num_losses;
@@ -8,25 +12,25 @@ struct Player {
 } *Player
 
 
-
-
-int calc_level(Player player)
+void set_level(Player player)
 {
-   return (6*(player->num_wins))-(10*(player->num_losses))+(2*(player->num_draws))/((player->num_draws)+(player->num_losses)+(player->num_wins));   
+    int num_games=(player->num_wins)+(player->num_losses)+(player->num_draws);
+    player->level=(NUM_WINS_WEIGHT*(player->num_wins))+(NUM_LOSSES_WEIGHT*(player->num_losses))+(NUM_DRAWS_WEIGHT*(player->num_draws))/(num_games);  
 }
 
 Player copyPlayer(Player player)
 {
     Player CopyOfplayer=malloc(sizeof(*CopyOfplayer));
-    if(CopyOfplayer=NULL) return NULL;
+    if(CopyOfplayer==NULL) return NULL;
     CopyOfplayer->id=playerInTour->id;
     CopyOfplayer->num_losses=player->num_losses;
     CopyOfplayer->num_wins=player->num_wins;
     CopyOfplayer->num_draws=player->num_draws;
     CopyOfplayer->playtime=player->playtime;
     CopyOfplayer->level=player->level;
-    return copyPlayer;
+    return copyOfPlayer;
 }
+
 
 void freePlayer(Player player)
 {
