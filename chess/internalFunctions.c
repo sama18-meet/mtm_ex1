@@ -1,22 +1,26 @@
 #include "internalFunctions.h"
 
+#include "assert.h"
+#include <stdlib.h>
+#include <stdio.h>
+
 #define MAX_DIGITS 15
 
 
-bool valid_playtime(int playtime) {
+bool checkValidPlaytime(int playtime) {
     return playtime >= 0;
 }
 
-void update_players_info(ChessSystem chess, Tour tour, int first_player, int second_player, Winner winner, int playtime) {
+void PlayersInfoUpdate(ChessSystem chess, Tour tour, int first_player, int second_player, Winner winner, int playtime) {
     assert(chess != NULL);
     assert(tour != NULL);
     PlayerInTour player1_in_tour = mapGet(tour->playerInTour, first_player);
     assert(player1_in_tour != NULL);
     PlayerInTour player2_in_tour = mapGet(tour->playerInTour, second_player);
     assert(player2_in_tour != NULL);
-    Player player1_chess = mapGet(chess->players, first_player);
+    Player player1_chess = mapGet(chess->players,(void*)first_player);
     assert(player1_chess != NULL);
-    Player player2_chess = mapGet(chess->players, second_player);
+    Player player2_chess = mapGet(chess->players,(void*)second_player);
     assert(player2_chess != NULL);
     if (winner == FIRST_PLAYER) {
         player1_in_tour->num_wins++;
@@ -42,7 +46,7 @@ void update_players_info(ChessSystem chess, Tour tour, int first_player, int sec
     player2_chess->playtime += playtime;
 }
 
-ChessResult put_to_file(*str_returning_func func, FILE* file, Tour tour) {
+ChessResult putToFile(ChessSystem chess,str_returning_func func, FILE* file, Tour tour) {
     assert(tour!=NULL);
     char* out = func(tour);
     if (out == NULL)
@@ -50,33 +54,29 @@ ChessResult put_to_file(*str_returning_func func, FILE* file, Tour tour) {
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    int fputs_out = fputs(file, out);
+    int fputs_out = fputs(out,file);
     free(out);
     if (fputs_out == EOF) { return CHESS_SAVE_FAILURE; }
     return CHESS_SUCCESS;
 }
 
-
-char* int_to_str(int n);                       ///////////// NEEDS IMPLEMENTATION
-char* double_to_str(double d, int num_digits); ///////////// NEEDS IMPLEMENTATION
-
-bool valid_id(int id) {
+bool checkValidId(int id) {
     return id>0;
 }
 
-bool location_valid(const char* tournament_location)
+bool checkValidlocation(const char* tournament_location)
 {
     int counter=0,pointer=0;
-    for(int i=0; location[i]!='\0'; i++)
+    for(int i=0; tournament_location[i]!='\0'; i++)
     {
-        if(i==0 && location[i]<'A' ||  location[i]>'Z') return false;
-        if(i>0 &&  location[i]<'a' ||  location[i]>'z' || location[i]=' ') return false ;
+        if(i==0 && tournament_location[i]<'A' ||  tournament_location[i]>'Z') return false;
+        if(i>0 &&  tournament_location[i]<'a' ||  tournament_location[i]>'z' || tournament_location[i]==' ') return false ;
     }
  return true;
 }
 
-bool attempt_put(FILE* file, char* str, char* id, char* level) {
-    if (fputs(file, str) == EOF) {
+bool attemptPut(FILE* file, char* str, char* id, char* level) {
+    if (fputs(str, file) == EOF) {
         free(id);
         free(level);
         fclose(file);
@@ -85,14 +85,14 @@ bool attempt_put(FILE* file, char* str, char* id, char* level) {
     return true;
 }
 
-char* int_to_str(int num) {
+char* putIntInStr(int num) {
     char* str = malloc(sizeof(*str)* MAX_DIGITS);
-    sprintf(str, "%d", n);
+    sprintf(str, "%d", num);
     return str;
 }
 
-char* double_to_str(double doub) {
+char* putdoubleInStr(double doub) {
     char* str = malloc(sizeof(*str)* MAX_DIGITS);
-    sprintf(str, "%lf", n);
+    sprintf(str, "%lf", doub);
     return str;
 }
