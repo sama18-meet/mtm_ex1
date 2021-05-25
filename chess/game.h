@@ -5,11 +5,10 @@
 #include <chessSystem.h>
 
 
+typedef struct Game_t *Game;
 
-typedef struct game_t *Game;
-
-Game copyGame(Game game);
-Game createGame(int player1, int player2, Winner winner, int time);
-void freeGame(Game game);
+Game gameCreate(int player1_id, int player2_id, Winner winner, int time);
+Game gameCopy(Game game);
+void gameFree(Game game);
 
 #endif
