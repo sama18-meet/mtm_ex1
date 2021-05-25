@@ -14,12 +14,14 @@ GameId createGameId(int id1, int id2) {
 
 
 GameId copyGameId(GameId gameId) {
-    if (gameId == NULL) {return NULL; }
-    GameId gameIdCpy = malloc(sizeof(*gameIdCpy));
-    if (gameIdCpy == NULL) { return NULL; }
-    gameIdCpy->id1 = gameId->id1;
-    gameIdCpy->id2 = gameId->id2;
-    return gameIdCpy;
+    if (gameId == NULL) {
+        return NULL;
+    }
+    GameId gameIdCopy = createGameId(gameId->id1, gameId->id2);
+    if (gameIdCopy == NULL) {
+        return NULL;
+    }
+    return gameIdCopy;
 }
 
 GameId freeGameId(GameId gameId) {
@@ -33,7 +35,8 @@ int cmpGameId(GameId gmid1, GameId gmid2) {
     return 1;
 }
 
-void changeGameId(GameId gmid, int id1, int id2) {
-    gmid->id1 = id1;
-    gmid->id2 = id2;
+void changeGameId(GameId gameId, int newId1, int newId2) {
+    assert(gameId != NULL);
+    gameId->id1 = newId1;
+    gameId->id2 = newId2;
 }
