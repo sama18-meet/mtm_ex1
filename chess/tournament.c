@@ -61,7 +61,7 @@ void freeTour(Tour tour)
     free(tour);
 }
 
-void freeTour(void* tour) {
+void freeTourVoid(void* tour) {
     freeTour((void*)tour);
 }
 
