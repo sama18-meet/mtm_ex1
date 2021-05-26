@@ -121,21 +121,21 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
    
     Tour tour_obj=mapGet(chess->tours, &tournament_id); 
     assert(tour_obj!=NULL);
-    MAP_FOREACH(PlayerInTour, player_in_tour, tourGetPlayerInTour(chess->tours))
+    MAP_FOREACH(PlayerInTour, player_in_tour, tourGetPlayerInTour(tour_obj))
     {
         int player_in_tour_id = playerInTourGetId(player_in_tour);
         Player player=mapGet(chess->players,&player_in_tour_id);
         assert(player!=NULL);
-        playerInTourSetNumWins(player, -playerInTourGetNumWins(player_in_tour));
-        playerInTourSetNumLosses(player, -playerInTourGetNumLosses(player_in_tour));
-        playerInTourSetNumDraws(player, -playerInTourGetNumDraws(player_in_tour));
-        playerInTourSetNumPlaytime(player, -playerInTourGetNumPlaytime(player_in_tour));
+        playerSetNumWins(player, -playerInTourGetNumWins(player_in_tour));
+        playerSetNumLosses(player, -playerInTourGetNumLosses(player_in_tour));
+        playerSetNumDraws(player, -playerInTourGetNumDraws(player_in_tour));
+        playerSetPlaytime(player, -playerInTourGetPlaytime(player_in_tour));
         set_level(player);
     }
     mapDestroy(tourGetGames(tour_obj));
     mapDestroy(tourGetPlayerInTour(tour_obj));
     freeTour(tour_obj);
-    mapRemove(chess->tours, tournament_id);
+    mapRemove(chess->tours, &tournament_id);
 }
 
 
@@ -145,12 +145,12 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     {
         return CHESS_NULL_ARGUMENT;
     }
-    if (!valid_id(first_player) || !valid_id(second_player)
-        || !valid_id(tournament_id) || first_player == second_player)
+    if (!checkValidId(first_player) || !checkValidId(second_player)
+        || !checkValidId(tournament_id) || first_player == second_player)
     {
         return CHESS_INVALID_ID;
     }
-    Tour tour = mapGet(chess->tours, tournament_id);
+    Tour tour = mapGet(chess->tours, &tournament_id);
     if (tour == NULL)
     {
         return CHESS_TOURNAMENT_NOT_EXIST;
@@ -160,54 +160,50 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
         return CHESS_TOURNAMENT_ENDED;
     }
     // check if game already exists
-    GameId game_id = createGameId(first_player, second_player);
+    GameId game_id = gameIdCreate(first_player, second_player);
     if (game_id == NULL)
     {
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    if (mapContains(tour, game_id)) {
-        freeGameId(game_id); 
+    if (mapContains(tourGetGames(tour), game_id)) {
+        gameIdFree(game_id);
         return CHESS_GAME_ALREADY_EXISTS;
     }
+    gameIdFree(game_id);
     // check playtime validity
-    if (!valid_playtime(play_time))
+    if (!checkValidPlaytime(play_time))
     {
-        freeGameId(game_id);
         return CHESS_INVALID_PLAY_TIME;
     }
     // check if player exceeded games
     if (player_exceeded_games(tour, first_player) || 
         player_exceeded_games(tour, second_player))
     {
-        freeGameId(game_id);
         return CHESS_EXCEEDED_GAMES;
     }
     // all is good, create game 
     PlayerInTour player1_in_tour = getPlayerInTour(tour, first_player);
     PlayerInTour player2_in_tour = getPlayerInTour(tour, second_player);
     if (player1_in_tour == NULL || player2_in_tour == NULL) {
-        freeGameId(game_id);
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    Game game = createGame(game_id, first_player, second_player, winner, play_time);
+    Game game = gameCreate(first_player, second_player, winner, play_time);
     if (game == NULL)
     {
-        freeGameId(game_id);
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    MapResult res = mapPut(tourGetGames(tour), game_id, game);
-    freeGameId(game_id);
-    freeGame(game);
+    MapResult res = mapPut(tourGetGames(tour), gameGetId(game), game);
+    gameFree(game);
     assert(res != MAP_NULL_ARGUMENT);
     if (res == MAP_OUT_OF_MEMORY)
     {
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    playersInfoUpdate(chess->players, tourGetPlayerInTour(tour), first_player, second_player, winner, play_time);
+    PlayersInfoUpdate(chess->players, tourGetPlayerInTour(tour), first_player, second_player, winner, play_time);
     return CHESS_SUCCESS;
 
 }
@@ -215,7 +211,7 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
 ChessResult chessRemovePlayer(ChessSystem chess, int player_id) {
     if (chess == NULL) { return CHESS_NULL_ARGUMENT; }
     assert(chess->players != NULL);
-    if (!valid_id(player_id)) 
+    if (!checkValidId(player_id)) 
     {
         return CHESS_INVALID_ID;
     }
@@ -238,7 +234,7 @@ ChessResult chessEndTournament (ChessSystem chess, int tournament_id) {
     { 
         return CHESS_NULL_ARGUMENT;
     }
-    if (!valid_id(tournament_id))
+    if (!checkValidId(tournament_id))
     { 
         return CHESS_INVALID_ID;
     }
@@ -266,7 +262,7 @@ double chessCalculateAveragePlayTime (ChessSystem chess, int player_id, ChessRes
     {
         return CHESS_NULL_ARGUMENT;
     }
-    if (!valid_id(player_id))
+    if (!checkValidId(player_id))
     {
         return CHESS_INVALID_ID;
     }
