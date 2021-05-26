@@ -1,12 +1,10 @@
-#include "tournament.h"
-#include "map.h"
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
 #include "game.h"
 #include "gameId.h"
 #include "intKey.h"
 #include "internalFunctions.h"
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
 
 struct Tour_t {
     int id;
@@ -18,6 +16,43 @@ struct Tour_t {
     Map player_in_tour; // key is player id, data is playerInTour, only active players are included
     int num_players; // including deleted players
 };
+
+//get funcs 
+int tourGetId(Tour tour){
+    return tour->id;
+}
+int tourGetWinnerId(Tour tour){
+    return tour->winner_id;
+}
+int tourGetMaxGamesPerPlayer(Tour tour){
+    return tour->max_games_per_player;
+}
+int tourGetNumPlayers(Tour tour){
+    return tour->num_players;
+}
+Map tourGetGames(Tour tour){
+    return tour->games;
+}
+Map tourGetPlayerInTour(Tour tour){
+    return tour->player_in_tour;
+}
+bool tourGetActive(Tour tour){
+    return tour->active;
+}
+const char* tourGetLocation(Tour tour){
+    return tour->location;
+}
+
+//set funcs 
+void tourSetWinnerId(Tour tour,int num){
+    tour->winner_id+=num;
+}
+void tourSetActive(Tour tour,bool active_status){
+    tour->active=active_status;
+}
+void tourSetNumPlayers(Tour tour,int num){
+    tour->num_players+=num;
+}
 
 void freeTour(Tour tour)
 {
