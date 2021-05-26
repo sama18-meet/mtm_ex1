@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include "chessSystem.h"
+#include "gameId.h"
+
 
 typedef struct Game_t *Game;
 
