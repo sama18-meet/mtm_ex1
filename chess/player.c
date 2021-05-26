@@ -17,6 +17,21 @@ struct Player_t {
     int level;
 };
 
+
+//GET FUNCS
+int playerGetNumLosses(Player player) {
+    return player->num_losses;
+}
+int playerGetNumWins(Player player) {
+    return player->num_wins;
+}
+int playerGetNumDraws(Player player) {
+    return player->num_draws;
+}
+int playerGetPlaytime(Player player) {
+    return player->playtime;
+}
+
 //SET FUNCS
 void playerSetNumLosses(Player player, int num) {
     player->num_losses+=num;
