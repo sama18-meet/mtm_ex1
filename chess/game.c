@@ -78,7 +78,5 @@ void gameFree(Game game) {
 }
 
 void gameFreeVoid(void* game) {
-    free((game)game);
+    free((Game)game);
 }
-
-
