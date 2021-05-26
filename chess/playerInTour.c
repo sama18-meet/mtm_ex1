@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "playerInTour.h"
 #define POINTS_PER_WIN 2
 #define POINTS_PER_LOSS 0
@@ -40,7 +41,7 @@ PlayerInTour createPlayerInTour(int player_id) {
     player_in_tour->num_losses = 0;
     player_in_tour->num_wins = 0;
     player_in_tour->num_draws = 0;
-    player_in_tour->time=0;
+    player_in_tour->playtime=0;
     player_in_tour->points = 0;
     return player_in_tour;
 }
@@ -50,7 +51,7 @@ void playerInTourFree(PlayerInTour player_in_tour) {
 }
 
 void playerInTourFreeVoid(void* player_in_tour) {
-    playerInTourFree((PlayerInTour)player_in_tour)
+    playerInTourFree((PlayerInTour)player_in_tour);
 }
 
 PlayerInTour playerInTourCopy(PlayerInTour player_in_tour) {
@@ -62,7 +63,7 @@ PlayerInTour playerInTourCopy(PlayerInTour player_in_tour) {
     player_in_tour_copy->num_losses=player_in_tour->num_losses;
     player_in_tour_copy->num_wins=player_in_tour->num_wins;
     player_in_tour_copy->num_draws=player_in_tour->num_draws;
-    player_in_tour_copy->time=player_in_tour->time;
+    player_in_tour_copy->playtime=player_in_tour->playtime;
     player_in_tour_copy->points=player_in_tour->points;
     return player_in_tour_copy;
 }
