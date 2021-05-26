@@ -17,7 +17,10 @@ Player* get_sorted_players(Map players);
 void insert_player(Player* sorted_players, Player player, int size);
 int player_compare_levels(Player player1, Player player2);
 
-
+void playerSetNumLosses(Player player, int num);
+void playerSetNumWins(Player player, int num);
+void playerSetNumDraws(Player player, int num);
+void playerSetPlaytime(Player player, int num);
 
 #endif
 
