@@ -31,6 +31,12 @@ int playerGetNumDraws(Player player) {
 int playerGetPlaytime(Player player) {
     return player->playtime;
 }
+int playerGetLevel(Player player) {
+    return player->level;
+}
+int playerGetId(Player player) {
+    return player->id;
+}
 
 //SET FUNCS
 void playerSetNumLosses(Player player, int num) {
