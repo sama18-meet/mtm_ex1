@@ -22,6 +22,7 @@ void tourSetWinnerId(Tour tour,int num);
 void tourSetActive(Tour tour,bool active_status);
 void tourSetNumPlayers(Tour tour,int num);
 void freeTour(Tour tour);
+void freeTourVoid(void* tour);
 Tour tourCopy(Tour tour);
 void* tourCopyToVoid(void* tour);
 Tour CreateTour(int tournament_id, int max_games_per_player, const char* tournament_location);
