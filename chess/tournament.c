@@ -98,22 +98,22 @@ void set_winner(Tour tour) {
     assert(tour != NULL);
     assert(tour->player_in_tour != NULL);
     PlayerInTour winner = mapGetFirst(tour->player_in_tour);
-    MAP_FOREACH(int, curr_player, tour->player_in_tour) {
-        playerInTourUpdatePoints(mapGet((void*)curr_player));
-        winner = playerInTourMaxPlayer(winner, mapGet(curr_player)); 
+    MAP_FOREACH(int*, curr_player, tour->player_in_tour) {
+        playerInTourUpdatePoints(mapGet(tour->player_in_tour, (void*)curr_player));
+        winner = playerInTourMaxPlayer(winner, mapGet(tour->player_in_tour, curr_player)); 
     }
-    tour->winner_id = winner->id;
+    tour->winner_id = playerInTourGetId(winner);
 }
 
 bool player_exceeded_games(Tour tour, int player_id) {
     assert(tour!=NULL);
-    if (!mapContains(tour->player_in_tour, player_id)
+    if (!mapContains(tour->player_in_tour, &player_id))
     {
         return false;
     }
-    PlayerInTour player = mapGet(tour->player_in_tour, player_id);
+    PlayerInTour player = mapGet(tour->player_in_tour, &player_id);
     assert(player!=NULL);
-    int num_games = player->num_wins + player->num_losses + player->num_draws;
+    int num_games = playerInTourGetNumWins(player) + playerInTourGetNumLosses(player) + playerInTourGetNumDraws(player);
     assert(num_games <= tour->max_games_per_player);
     if (num_games == tour->max_games_per_player) {
         return true;
@@ -124,21 +124,21 @@ bool player_exceeded_games(Tour tour, int player_id) {
 
 // if player doesn't already exist in tour, it adds it
 PlayerInTour getPlayerInTour(Tour tour, int player_id) {    
-    PlayerInTour player_in_tour = mapGet(tour->player_in_tour, player_id);
+    PlayerInTour player_in_tour = mapGet(tour->player_in_tour, &player_id);
     if (player_in_tour == NULL) {
         player_in_tour = createPlayerInTour(player_id);
         if (player_in_tour == NULL) { return NULL; }
-        MapResult res = mapPut(tour->player_in_tour, player_id, player_in_tour);
+        MapResult res = mapPut(tour->player_in_tour, &player_id, player_in_tour);
         assert(res != MAP_NULL_ARGUMENT);
         if (res == MAP_OUT_OF_MEMORY)
         {
-            freePlayerInTour(player_in_tour);
+            playerInTourFree(player_in_tour);
             return NULL;
         }
-        freePlayerInTour(player_in_tour);
+        playerInTourFree(player_in_tour);
         tour->num_players++;
     }
-    return mapGet(tour->player_in_tour, player_id);
+    return mapGet(tour->player_in_tour, &player_id);
 }
 
 
@@ -157,44 +157,44 @@ void removePlayerFromTour(Tour tour, int player_id)
         }
         else if (gameGetPlayer2Id(g) == player_id) 
         {
-            gameGetPlayer2Id(g, 0);
+            gameSetPlayer2Id(g, 0);
             gameIdChange(gameGetId(g), gameGetPlayer1Id(g), 0);
             if (tour->active) {
                 gameSetWinner(g, FIRST_PLAYER);
             }
         }
     }
-    mapRemove(tour->player_in_tour, player_id);
+    mapRemove(tour->player_in_tour, &player_id);
 }
 
 char* get_winner_id(Tour tour) {
-    return int_to_str(tour->winner_id);
+    return putIntInStr(tour->winner_id);
 }
 char* get_longest_game_time(Tour tour) {
-    int longes_game_time = -1;
+    int longest_game_time = -1;
     MAP_FOREACH(Game, game, tour->games) {
-        if (game->time > longest_game_time)
-            longest_game_time = game->time;
+        if (gameGetTime(game) > longest_game_time)
+            longest_game_time = gameGetTime(game);
     }
-    return int_to_str(longest_game_time)
+    return putIntInStr(longest_game_time);
 }
 char* get_avg_game_time(Tour tour) {
     int times_sum = 0;
-    int num_games = 0
+    int num_games = 0;
     MAP_FOREACH(Game, game, tour->games) {
-        times_sum += game->time;
+        times_sum += gameGetTime(game);
         num_games++;
     }
     assert(mapGetSize(tour->games) == num_games);
-    return double_to_str(times_sum/num_games);
+    return putDoubleInStr(times_sum/num_games);
 }
 char* get_location(Tour tour) {
     char* location_copy = malloc(sizeof(location_copy)*strlen(tour->location));
     return location_copy;
 }
 char* get_num_of_games(Tour tour) {
-    return int_to_str(mapGetSize(tour->games));
+    return putIntInStr(mapGetSize(tour->games));
 }
 char* get_num_players(Tour tour) {
-    return int_to_str(tour->num_players);
+    return putIntInStr(tour->num_players);
 }
