@@ -30,11 +30,10 @@ void set_winner(Tour tour);
 bool player_exceeded_games(Tour tour, int player_id);
 PlayerInTour getPlayerInTour(Tour tour, int player_id);
 void removePlayerFromTour(Tour tour, int player_id);
-char* get_winner_id(Tour tour);
-char* get_longest_game_time(Tour tour);
-char* get_avg_game_time(Tour tour);
-char* get_location(Tour tour);
-char* get_num_of_games(Tour tour);
-char* get_num_players(Tour tour);
-
+char* getWinnerIdStr(Tour tour);
+char* getLongestGameTimeStr(Tour tour);
+char* getAvgGameTimeStr(Tour tour);
+char* getLocationStr(Tour tour);
+char* getNumOfGamesStr(Tour tour);
+char* getNumPlayersStr(Tour tour);
 #endif
