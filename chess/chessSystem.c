@@ -1,6 +1,12 @@
 #include "map.h"
 #include "chessSystem.h"
+#include "tournament.h"
+#include "intKey.h"
+#include "internalFunctions.h"
+#include "player.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #define MAX_INT_DIGITS 10
 #define NUM_TOUR_STATISTICS_FIELDS = 6
@@ -9,7 +15,7 @@
 struct chess_system_t {
     Map tours; // by id
     Map players; //by id data is obj ptr
-}
+};
 
 //user's functions
 ChessSystem chessCreate()
@@ -19,9 +25,9 @@ ChessSystem chessCreate()
     { 
         return NULL; 
     }
-    chess->tours=mapCreate(copyTour, 
-                            copyInt,
-                            freeTour,
+    chess->tours=mapCreate(tourCopyToVoid, 
+                            copyKeyInt,
+                            freeTourVoid,
                             freeInt,
                             compareInts);
     if(chess->tours==NULL)
@@ -29,18 +35,18 @@ ChessSystem chessCreate()
         free(chess);
         return NULL;
     }
-    chess->players=mapCreate(copyPlayer,
-                            copyInt,
-                            freePlayer,
+    chess->players=mapCreate(copyPlayerToVoid,
+                            copyKeyInt,
+                            freePlayerVoid,
                             freeInt,
-                            compareInts;
+                            compareInts);
     if(chess->players==NULL)
     { 
         mapDestroy(chess->tours);
         free(chess);
         return NULL;
     }
-return chess; 
+    return chess; 
 }
 
 
@@ -61,19 +67,19 @@ ChessResult chessAddTournament (ChessSystem chess, int tournament_id, int max_ga
     {
         return CHESS_NULL_ARGUMENT;
     }
-    if(!valid_id(tournament_id))
+    if(!checkValidId(tournament_id))
     {
         return CHESS_INVALID_ID; 
     }
-    if(mapContains(chess->tours, tournament_id))
+    if(mapContains(chess->tours, &tournament_id))
     {
         return CHESS_TOURNAMENT_ALREADY_EXISTS; 
     }
-    if(!location_valid(tournament_location))
+    if(!checkValidLocation(tournament_location))
     { 
         return CHESS_INVALID_LOCATION;
     }
-    if(!valid_id(max_games_per_player))
+    if(!checkValidId(max_games_per_player))
     {
         return CHESS_INVALID_MAX_GAMES;
     }
@@ -85,7 +91,7 @@ ChessResult chessAddTournament (ChessSystem chess, int tournament_id, int max_ga
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    MapResult mapRes=mapPut(chess->tours, tournament_id, tour);
+    MapResult mapRes=mapPut(chess->tours, &tournament_id, tour);
     assert(mapRes!=MAP_NULL_ARGUMENT);
     if(mapRes==MAP_OUT_OF_MEMORY)
     {
@@ -102,25 +108,26 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
     {
         return CHESS_NULL_ARGUMENT;
     }
-    if(!valid_id(tournament_id))
+    if(!checkValidId(tournament_id))
     {
         return CHESS_INVALID_ID; 
     }
-    if(!mapContains(chess->tours, tournament_id))
+    if(!mapContains(chess->tours, &tournament_id))
     { 
-        return CHESS_TOURNAMENT_NOT_EXISTS; 
+        return CHESS_TOURNAMENT_NOT_EXIST; 
     }
    
-    Tour tour_obj=mapGet(chess->tours, tournament_id); 
+    Tour tour_obj=mapGet(chess->tours, &tournament_id); 
     assert(tour_obj!=NULL);
     MAP_FOREACH(PlayerInTour, player_in_tour, chess->tours->playerInTour)
     {
-        Player player=mapGet(chess->players,player_in_tour->id);
+        int player_in_tour_id = playerInTourGetId(player_in_tour);
+        Player player=mapGet(chess->players,&player_in_tour_id);
         assert(player!=NULL);
-        player->num_wins-=player_in_tour->num_wins;
-        player->num_losses-=player_in_tour->num_losses;
-        player->num_draws-=player_in_tour->num_draws;
-        player->playtime-=player_in_tour->time;
+        playerInTourSetNumWins(player, -playerInTourGetNumWins(player_in_tour));
+        playerInTourSetNumLosses(player, -playerInTourGetNumLosses(player_in_tour));
+        playerInTourSetNumDraws(player, -playerInTourGetNumDraws(player_in_tour));
+        playerInTourSetNumPlaytime(player, -playerInTourGetNumPlaytime(player_in_tour));
         set_level(player);
     }
     mapDestroy(tour_obj->games);
@@ -198,7 +205,7 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    update_players_info(chess, tour, first_player, second_player, winner, play_time);
+    playersInfoUpdate(chess->players, tour->player_in_tour, first_player, second_player, winner, play_time);
     return CHESS_SUCCESS;
 
 }
@@ -317,33 +324,33 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
     }
     assert(chess->players != NULL);
     int num_players = mapGetSize(chess->players);
-    Player sorted_players = get_sorted_players(chess->players);
+    Player* sorted_players = get_sorted_players(chess->players);
     if (sorted_players == NULL) {
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
     for (; num_players>0; num_players--) {
-        char* id = int_to_str(player->id); 
+        char* id = putIntInStr(sorted_players[num_players]->id); 
         if (id == NULL) {
             chessDestroy(chess);
             return CHESS_OUT_OF_MEMORY;
         }
-        char* level = int_to_str(player->level); 
+        char* level = putIntInStr(sorted_players[num_players]->level); 
         if (level == NULL) {
             free(id);
             chessDestroy(chess);
             return CHESS_OUT_OF_MEMORY;
         }
-        if (!attempt_put(file, id, id, level)) {
+        if (!attemptPut(file, id, id, level)) {
             return CHESS_SAVE_FAILURE;
         }
-         if (!attempt_put(file, " ", id, level)) {
+         if (!attemptPut(file, " ", id, level)) {
             return CHESS_SAVE_FAILURE;
         }
-         if (!attempt_put(file, level, id, level)) {
+         if (!attemptPut(file, level, id, level)) {
             return CHESS_SAVE_FAILURE;
         }
-        if (!attempt_put(file, "\n", id, level)) {
+        if (!attemptPut(file, "\n", id, level)) {
             return CHESS_SAVE_FAILURE;
         }
         free(id);
