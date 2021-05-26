@@ -17,7 +17,7 @@ GameId gameIdCreate(int id1, int id2) {
 
 
 GameId gameIdCopy(GameId game_id) {
-    if (gameId == NULL) {
+    if (game_id == NULL) {
         return NULL;
     }
     GameId game_id_copy = gameIdCreate(game_id->id1, game_id->id2);
@@ -36,7 +36,7 @@ void gameIdFree(GameId gameId) {
 }
 
 void gameIdFreeVoid(void* game_id) {
-    gameIdFree((Game)game_id);     
+    gameIdFree((GameId)game_id);     
 }
 
 int gameIdCmp(GameId gameId1, GameId gameId2) {
