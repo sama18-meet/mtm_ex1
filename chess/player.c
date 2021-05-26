@@ -17,6 +17,19 @@ struct Player_t {
     int level;
 };
 
+//SET FUNCS
+void playerSetNumLosses(Player player, int num) {
+    player->num_losses+=num;
+}
+void playerSetNumWins(Player player, int num) {
+    player->num_wins+=num;
+}
+void playerSetNumDraws(Player player, int num) {
+    player->num_draws+=num;
+}
+void playerSetPlaytime(Player player, int num) {
+    player->playtime+=num;
+}
 
 void set_level(Player player)
 {
