@@ -21,6 +21,9 @@ int playerGetNumLosses(Player player);
 int playerGetNumWins(Player player);
 int playerGetNumDraws(Player player);
 int playerGetPlaytime(Player player);
+int playerGetLevel(Player player);
+int playerGetId(Player player);
+
 void playerSetNumLosses(Player player, int num);
 void playerSetNumWins(Player player, int num);
 void playerSetNumDraws(Player player, int num);
