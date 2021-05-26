@@ -206,10 +206,10 @@ void removePlayerFromTour(Tour tour, int player_id)
     mapRemove(tour->player_in_tour, &player_id);
 }
 
-char* get_winner_id(Tour tour) {
+char* getWinnerIdStr(Tour tour) {
     return putIntInStr(tour->winner_id);
 }
-char* get_longest_game_time(Tour tour) {
+char* getLongestGameTimeStr(Tour tour) {
     int longest_game_time = -1;
     MAP_FOREACH(Game, game, tour->games) {
         if (gameGetTime(game) > longest_game_time)
@@ -217,7 +217,7 @@ char* get_longest_game_time(Tour tour) {
     }
     return putIntInStr(longest_game_time);
 }
-char* get_avg_game_time(Tour tour) {
+char* getAvgGameTime(Tour tour) {
     int times_sum = 0;
     int num_games = 0;
     MAP_FOREACH(Game, game, tour->games) {
@@ -227,13 +227,13 @@ char* get_avg_game_time(Tour tour) {
     assert(mapGetSize(tour->games) == num_games);
     return putDoubleInStr(times_sum/num_games);
 }
-char* get_location(Tour tour) {
+char* getLocationStr(Tour tour) {
     char* location_copy = malloc(sizeof(location_copy)*strlen(tour->location));
     return location_copy;
 }
-char* get_num_of_games(Tour tour) {
+char* getNumOfGamesStr(Tour tour) {
     return putIntInStr(mapGetSize(tour->games));
 }
-char* get_num_players(Tour tour) {
+char* getNumPlayersStr(Tour tour) {
     return putIntInStr(tour->num_players);
 }
