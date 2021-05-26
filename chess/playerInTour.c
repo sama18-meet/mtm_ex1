@@ -14,6 +14,8 @@ struct PlayerInTour_t {
     int playtime;
     int points;
 };
+
+//get funcs
 int playerInTourGetId(PlayerInTour player_in_tour) {
     return player_in_tour->id;
 }
@@ -32,6 +34,26 @@ int playerInTourGetPlaytime(PlayerInTour player_in_tour) {
 int playerInTourGetPoints(PlayerInTour player_in_tour) {
     return player_in_tour->points;
 }
+
+//set funcs ->
+void playerInTourSetNumLosses(PlayerInTour player_in_tour, int num) {
+    player_in_tour->num_losses+=num;
+}
+void playerInTourSetNumWins(PlayerInTour player_in_tour,int num) {
+    player_in_tour->num_wins+=num;
+}
+void playerInTourSetNumDraws(PlayerInTour player_in_tour, int num) {
+    player_in_tour->num_draws+=num;
+}
+void playerInTourSetPlaytime(PlayerInTour player_in_tour, int num) {
+    player_in_tour->playtime+=num;
+}
+void playerInTourSetPoints(PlayerInTour player_in_tour, int num) {
+    player_in_tour->points+=num;
+}
+// <-
+
+
 PlayerInTour createPlayerInTour(int player_id) {
     PlayerInTour player_in_tour = malloc(sizeof(*player_in_tour));
     if (player_in_tour == NULL) {
