@@ -61,6 +61,10 @@ void freeTour(Tour tour)
     free(tour);
 }
 
+void freeTour(void* tour) {
+    freeTour((void*)tour);
+}
+
 Tour tourCopy(Tour tour)
 {
     if(tour==NULL) {
