@@ -30,8 +30,6 @@ int getListLength(Node list) {
     return len;
 }
 
-
-
 bool isListSorted(Node list) {
     int len = getListLength(list);
     for (int i=0; i<len-1; ++i) {
@@ -42,7 +40,6 @@ bool isListSorted(Node list) {
     }
     return true;
 }
-
 
 // **************************************************************** //
 
@@ -65,14 +62,14 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code) {
     }
     Node merged_list_iterator = merged_list;
     for (int i=0; i<merged_list_length; i++) {
-        if (list2 == NULL || list1->x >= list2->x) {
-            merged_list_iterator->x = list1->x;
-            list1 = list1->next;
+        if (/*list2 == NULL || should be removed*/ list1->x >= list2->x) {
+            merged_list_iterator->x = list2->x; //changed every 1 into 2 
+            list2 = list2->next;
         }
         else {
-            assert(list1 == NULL || list2->x >= list1->x);
-            merged_list_iterator->x = list2->x;
-            list2 = list2->next;
+            assert(list1 == NULL || list2->x > list1->x); //deleted = in ">="
+            merged_list_iterator->x = list1->x;//changed every 2 into 1
+            list1 = list1->next;
         }
         if (i == merged_list_length-1) {
             *error_code = SUCCESS;
@@ -92,8 +89,6 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code) {
 }
 // **************************************************************** //
 
-
-
 Node getNode(int size) {
     if (size <= 0) {return NULL;}
     Node prev_n = NULL;
@@ -110,10 +105,7 @@ Node getNode(int size) {
         prev_n = n;
     }
     return first_n;
-
 }
-
-
 
 void print_list(Node list) {
     while (list!=NULL) {
