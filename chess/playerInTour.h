@@ -1,8 +1,6 @@
 #ifndef _PLAYERINTOUR_H
 #define _PLAYERINTOUR_H
 
-#include "tournament.h"
-
 
 typedef struct PlayerInTour_t *PlayerInTour;
 

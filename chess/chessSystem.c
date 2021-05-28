@@ -136,6 +136,7 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
     mapDestroy(tourGetPlayerInTour(tour_obj));
     freeTour(tour_obj);
     mapRemove(chess->tours, &tournament_id);
+    return CHESS_SUCCESS;
 }
 
 
@@ -357,4 +358,5 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
     }
     fclose(file);
     free(sorted_players);
+    return CHESS_SUCCESS;
 }

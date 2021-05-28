@@ -1,6 +1,6 @@
 #include "player.h"
 #include "map.h"
-#include "ChessSystem.h"
+#include "chessSystem.h"
 
 #include <stdlib.h>
 #define NUM_WINS_WEIGHT 6

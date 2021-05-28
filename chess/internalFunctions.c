@@ -68,11 +68,14 @@ bool checkValidId(int id) {
 
 bool checkValidLocation(const char* tournament_location)
 {
-    int counter=0,pointer=0;
     for(int i=0; tournament_location[i]!='\0'; i++)
     {
-        if(i==0 && tournament_location[i]<'A' ||  tournament_location[i]>'Z') return false;
-        if(i>0 &&  tournament_location[i]<'a' ||  tournament_location[i]>'z' || tournament_location[i]==' ') return false ;
+        if((i==0 && tournament_location[i]<'A') ||  (tournament_location[i]>'Z')) {
+            return false;
+        }
+        if((i>0 &&  tournament_location[i]<'a') ||  (tournament_location[i]>'z') || (tournament_location[i]==' ')) {
+            return false;
+        }
     }
  return true;
 }
