@@ -4,6 +4,7 @@
 typedef struct PlayerInTour_t *PlayerInTour;
 
 PlayerInTour createPlayerInTour(int player_id);
+void* createPlayerInTourVoid(int player_id);
 void playerInTourFree(PlayerInTour player_in_tour);
 PlayerInTour playerInTourCopy(PlayerInTour player_in_tour);
 void* playerInTourCopyToVoid(void* player_in_tour);

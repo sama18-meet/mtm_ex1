@@ -68,6 +68,10 @@ PlayerInTour createPlayerInTour(int player_id) {
     return player_in_tour;
 }
 
+void* createPlayerInTourVoid(int player_id) {
+    return (void*)createPlayerInTour(player_id);
+}
+
 void playerInTourFree(PlayerInTour player_in_tour) {
     free(player_in_tour);
 }

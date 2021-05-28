@@ -58,6 +58,26 @@ void set_level(Player player)
 }
 
 
+Player createPlayer(int player_id) {
+    Player player=malloc(sizeof(*player));
+    if(player==NULL) {
+        return NULL;
+    }
+    player->id=player_id;
+    player->num_losses=0;
+    player->num_wins=0;
+    player->num_draws=0;
+    player->playtime=0;
+    player->level=0;
+    return player;
+}
+
+
+void* createPlayerVoid(int player_id) {
+    return (void*)createPlayer(player_id);
+}
+
+
 Player copyPlayer(Player player)
 {
     Player CopyOfplayer=malloc(sizeof(*CopyOfplayer));
@@ -83,6 +103,8 @@ void freePlayer(Player player)
 void freePlayerVoid(void* player) {
     freePlayer((Player)player);
 }
+
+
 
 
 Player* get_sorted_players(Map players)

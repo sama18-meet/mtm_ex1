@@ -10,19 +10,39 @@ bool checkValidPlaytime(int playtime) {
     return playtime >= 0;
 }
 
-void PlayersInfoUpdate(Map players,Map playerInTour, int first_player, int second_player, Winner winner, int playtime) {
+
+bool playerAddIfNew(Map map, int player_id, createPalyerFunc create_func, freePlayerFunc free_func) {
+    MapDataElement player = mapGet(map, &player_id);
+    if (player == NULL) {
+        MapDataElement player = create_func(player_id);
+        if (player == NULL) {
+            return false;
+        }
+        MapResult res = mapPut(map, &player_id, player);
+        assert(res != MAP_NULL_ARGUMENT);
+        if (res == MAP_OUT_OF_MEMORY)
+        {
+            free_func(player);
+            return false;
+        }
+        free_func(player);
+    }
+    return true;
+}
+
+
+void PlayersInfoUpdate(Map players, Map playerInTour, int first_player, int second_player, Winner winner, int playtime) {
     assert(players != NULL);
     assert(playerInTour != NULL);
     PlayerInTour player1_in_tour = mapGet(playerInTour, &first_player);
     assert(player1_in_tour != NULL);
     PlayerInTour player2_in_tour = mapGet(playerInTour, &second_player);
     assert(player2_in_tour != NULL);
-    Player player1_chess = mapGet(players,&first_player);
+    Player player1_chess = mapGet(players, &first_player);
     assert(player1_chess != NULL);
-    Player player2_chess = mapGet(players,&second_player);
+    Player player2_chess = mapGet(players, &second_player);
     assert(player2_chess != NULL);
     if (winner == FIRST_PLAYER) {
-
         playerInTourSetNumWins(player1_in_tour, 1);
         playerSetNumWins(player1_chess, 1);
         playerInTourSetNumLosses(player2_in_tour, 1);

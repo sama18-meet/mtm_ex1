@@ -7,8 +7,10 @@
 #include "playerInTour.h"
 #include "player.h"
 
-
+typedef void* createPalyerFunc(int);
+typedef void freePlayerFunc(void*);
 typedef char* (*str_returning_func)(Tour);
+bool playerAddIfNew(Map map, int player_id, createPalyerFunc create_func, freePlayerFunc free_func);
 bool checkValidPlaytime(int playtime);
 void PlayersInfoUpdate(Map players,Map playerInTour, int first_player, int second_player, Winner winner, int playtime);
 ChessResult putToFile(ChessSystem,str_returning_func func, FILE* file, Tour tour);

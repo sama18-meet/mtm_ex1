@@ -105,7 +105,7 @@ Tour CreateTour(int tournament_id, int max_games_per_player, const char* tournam
     tour->location= tournament_location;
     tour->winner_id=-1;
     tour->max_games_per_player=max_games_per_player;
-    tour->active=false; 
+    tour->active=true; 
     tour->num_players = 0;
     tour->games=mapCreate(gameCopyToVoid,
                         gameIdCopyToVoid,
@@ -158,26 +158,6 @@ bool player_exceeded_games(Tour tour, int player_id) {
         return true;
     }
     return false;
-}
-
-
-// if player doesn't already exist in tour, it adds it
-PlayerInTour getPlayerInTour(Tour tour, int player_id) {    
-    PlayerInTour player_in_tour = mapGet(tour->player_in_tour, &player_id);
-    if (player_in_tour == NULL) {
-        player_in_tour = createPlayerInTour(player_id);
-        if (player_in_tour == NULL) { return NULL; }
-        MapResult res = mapPut(tour->player_in_tour, &player_id, player_in_tour);
-        assert(res != MAP_NULL_ARGUMENT);
-        if (res == MAP_OUT_OF_MEMORY)
-        {
-            playerInTourFree(player_in_tour);
-            return NULL;
-        }
-        playerInTourFree(player_in_tour);
-        tour->num_players++;
-    }
-    return mapGet(tour->player_in_tour, &player_id);
 }
 
 

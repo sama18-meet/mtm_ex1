@@ -9,6 +9,8 @@
 typedef struct Player_t *Player;
 
 void set_level(Player player);
+Player createPlayer(int player_id);
+void* createPlayerVoid(int player_id);
 Player copyPlayer(Player player);
 void* copyPlayerToVoid(void* player);
 void freePlayer(Player player);

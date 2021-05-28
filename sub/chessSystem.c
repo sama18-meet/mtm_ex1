@@ -118,7 +118,6 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
     { 
         return CHESS_TOURNAMENT_NOT_EXIST; 
     }
-   
     Tour tour_obj=mapGet(chess->tours, &tournament_id); 
     assert(tour_obj!=NULL);
     MAP_FOREACH(PlayerInTour, player_in_tour, tourGetPlayerInTour(tour_obj))
@@ -132,9 +131,6 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
         playerSetPlaytime(player, -playerInTourGetPlaytime(player_in_tour));
         set_level(player);
     }
-    mapDestroy(tourGetGames(tour_obj));
-    mapDestroy(tourGetPlayerInTour(tour_obj));
-    freeTour(tour_obj);
     mapRemove(chess->tours, &tournament_id);
     return CHESS_SUCCESS;
 }
@@ -184,12 +180,15 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
         return CHESS_EXCEEDED_GAMES;
     }
     // all is good, create game 
-    PlayerInTour player1_in_tour = getPlayerInTour(tour, first_player);
-    PlayerInTour player2_in_tour = getPlayerInTour(tour, second_player);
-    if (player1_in_tour == NULL || player2_in_tour == NULL) {
+    if (!playerAddIfNew(tourGetPlayerInTour(tour), first_player, createPlayerInTourVoid, playerInTourFreeVoid) ||
+        !playerAddIfNew(chess->players, first_player, createPlayerVoid, freePlayerVoid) ||
+        !playerAddIfNew(tourGetPlayerInTour(tour), second_player, createPlayerInTourVoid, playerInTourFreeVoid) ||
+        !playerAddIfNew(chess->players, second_player, createPlayerVoid, freePlayerVoid))
+    {
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
+    tourSetNumPlayers(tour, 1);
     Game game = gameCreate(first_player, second_player, winner, play_time);
     if (game == NULL)
     {
