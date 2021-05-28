@@ -1,7 +1,6 @@
 #ifndef _PLAYERINTOUR_H
 #define _PLAYERINTOUR_H
 
-
 typedef struct PlayerInTour_t *PlayerInTour;
 
 PlayerInTour createPlayerInTour(int player_id);
