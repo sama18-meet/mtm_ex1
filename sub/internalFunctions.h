@@ -1,7 +1,7 @@
 #ifndef _INTERNALFUNCTIONS_H
 #define _INTERNALFUNCTIONS_H
 
-#include "map.h"
+#include "mtm_map/map.h"
 #include "chessSystem.h"
 #include "tournament.h"
 #include "playerInTour.h"

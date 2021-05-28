@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include "map.h"
+#include "mtm_map/map.h"
 #include "chessSystem.h"
 #include "tournament.h"
 #include "playerInTour.h"

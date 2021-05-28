@@ -1,6 +1,6 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
-#include "map.h"
+#include "mtm_map/map.h"
 
 #include <stdio.h>
 #include "chessSystem.h"

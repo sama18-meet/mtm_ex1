@@ -1,5 +1,4 @@
 #include "player.h"
-#include "map.h"
 #include "chessSystem.h"
 
 #include <stdlib.h>
