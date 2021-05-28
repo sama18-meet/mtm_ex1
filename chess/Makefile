@@ -1,69 +1,16 @@
-########################################################################
-####################### Makefile Template ##############################
-########################################################################
+CC=gcc
+OBJS = election.o election_votes_list.o chessSystemTestsExample.o
+EXEC = chess
+DEBUG_FLAG = -g
+COMP_FLAG = -std=c99 -Wall -Werror
 
-# Compiler settings - Can be customized.
-CC = gcc
-CXXFLAGS = -std=c11 -Wall
-LDFLAGS = 
-
-# Makefile settings - Can be customized.
-APPNAME = SimpleList
-EXT = .c
-SRCDIR =\Users\admin\Desktop\MTM
-OBJDIR = obj
-
-############## Do not change anything from here downwards! #############
-SRC = $(wildcard $(SRCDIR)/*$(EXT))
-OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
-DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
-# UNIX-based OS variables & settings
-RM = rm
-DELOBJ = $(OBJ)
-# Windows OS variables & settings
-DEL = del
-EXE = .exe
-WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
-
-########################################################################
-####################### Targets beginning here #########################
-########################################################################
-
-all: $(APPNAME)
-
-# Builds the app
-$(APPNAME): $(OBJ)
-	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-
-# Creates the dependecy rules
-%.d: $(SRCDIR)/%$(EXT)
-	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
-
-# Includes all .h files
--include $(DEP)
-
-# Building rule for .o files and its .c/.cpp in combination with all .h
-$(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
-	$(CC) $(CXXFLAGS) -o $@ -c $<
-
-################### Cleaning rules for Unix-based OS ###################
-# Cleans complete project
-.PHONY: clean
-clean:
-	$(RM) $(DELOBJ) $(DEP) $(APPNAME)
-
-# Cleans only all files with the extension .d
-.PHONY: cleandep
-cleandep:
-	$(RM) $(DEP)
-
-#################### Cleaning rules for Windows OS #####################
-# Cleans complete project
-.PHONY: cleanw
-cleanw:
-	$(DEL) $(WDELOBJ) $(DEP) $(APPNAME)$(EXE)
-
-# Cleans only all files with the extension .d
-.PHONY: cleandepw
-cleandepw:
-	$(DEL) $(DEP)
+$(EXEC) : $(OBJS)
+	$(CC) $(DEBUG_FLAG) $(OBJS) -o $@ -L. -lmap
+election.o : election.c election.h mtm_map/map.h election_votes_list.h
+	$(CC) -c $(DEBUG_FLAG) $(COMP_FLAG) election.c
+election_votes_list.o : election_votes_list.c mtm_map/map.h election_votes_list.h
+	$(CC) -c $(DEBUG_FLAG) $(COMP_FLAG) election_votes_list.c 
+electionTestsExample.o : tests/electionTestsExample.c  mtm_map/map.h tests/../test_utilities.h tests/../election.h
+	$(CC) -c $(DEBUG_FLAG) $(COMP_FLAG)  tests/electionTestsExample.c
+clean:	
+	  rm -f $(OBJS) $(EXEC)
