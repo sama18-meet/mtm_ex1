@@ -62,12 +62,12 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code) {
     }
     Node merged_list_iterator = merged_list;
     for (int i=0; i<merged_list_length; i++) {
-        if (/*list2 == NULL || should be removed*/ list1->x >= list2->x) {
+        if (list1->x >= list2->x) {
             merged_list_iterator->x = list2->x; //changed every 1 into 2 
             list2 = list2->next;
         }
         else {
-            assert(list1 == NULL || list2->x > list1->x); //deleted = in ">="
+            assert(list2->x > list1->x); //deleted = in ">="
             merged_list_iterator->x = list1->x;//changed every 2 into 1
             list1 = list1->next;
         }
