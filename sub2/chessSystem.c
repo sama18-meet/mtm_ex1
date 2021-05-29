@@ -38,7 +38,7 @@ ChessSystem chessCreate()
         free(chess);
         return NULL;
     }
-    chess->players=mapCreate(copyPlayerToVoid,
+    chess->players=mapCreate(playerCopyToVoid,
                             copyKeyInt,
                             playerFreeVoid,
                             freeInt,
@@ -184,9 +184,9 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     bool player1_is_new;
     bool player2_is_new;
     if (!playerAddIfNew(tourGetPlayerInTour(tour), first_player, playerInTourCreateVoid, playerInTourFreeVoid, &player1_is_new) ||
-        !playerAddIfNew(chess->players, first_player, createPlayerVoid, playerFreeVoid, &player1_is_new) ||
+        !playerAddIfNew(chess->players, first_player, playerCreateVoid, playerFreeVoid, &player1_is_new) ||
         !playerAddIfNew(tourGetPlayerInTour(tour), second_player, playerInTourCreateVoid, playerInTourFreeVoid, &player2_is_new) ||
-        !playerAddIfNew(chess->players, second_player, createPlayerVoid, playerFreeVoid, &player2_is_new))
+        !playerAddIfNew(chess->players, second_player, playerCreateVoid, playerFreeVoid, &player2_is_new))
     {
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;

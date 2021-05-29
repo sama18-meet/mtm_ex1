@@ -121,7 +121,7 @@ Player* getSortedPlayers(Map players)
     int size = 0;
     MAP_FOREACH(int*, player_key, players)
     {
-        insertplayer(sorted_players, mapGet(players, player_key), size);
+        insertPlayer(sorted_players, mapGet(players, player_key), size);
         size++;
     }
     return sorted_players;

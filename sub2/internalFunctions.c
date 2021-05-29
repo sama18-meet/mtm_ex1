@@ -11,7 +11,7 @@ bool checkValidPlaytime(int playtime) {
 }
 
 
-bool playerAddIfNew(Map map, int player_id, createPalyerFunc create_func, freeplayerFunc free_func, bool*player_is_new) {
+bool playerAddIfNew(Map map, int player_id, createPalyerFunc create_func, freePlayerFunc free_func, bool*player_is_new) {
     MapDataElement player = mapGet(map, &player_id);
     *player_is_new=false;
     if (player == NULL) {
