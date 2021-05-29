@@ -47,7 +47,7 @@ const char* tourGetLocation(Tour tour){
 void tourSetWinnerId(Tour tour,int num){
     tour->winner_id+=num;
 }
-void tourSetActive(Tour tour,bool active_status){
+void tourSetActive(Tour tour, bool active_status){
     tour->active=active_status;
 }
 void tourSetNumPlayers(Tour tour,int num){

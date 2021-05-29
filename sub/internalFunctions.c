@@ -78,7 +78,9 @@ ChessResult putToFile(ChessSystem chess,str_returning_func func, FILE* file, Tou
     }
     int fputs_out = fputs(out,file);
     free(out);
-    if (fputs_out == EOF) { return CHESS_SAVE_FAILURE; }
+    if (fputs_out == EOF) {
+        return CHESS_SAVE_FAILURE;
+    }
     return CHESS_SUCCESS;
 }
 

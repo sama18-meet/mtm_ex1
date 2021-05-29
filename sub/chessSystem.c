@@ -282,9 +282,9 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
         return CHESS_NULL_ARGUMENT;
     }
     bool found_ended_tour = false;
-    MAP_FOREACH(Tour, tour, chess->tours) {
-        if (tourGetActive(tour))
-        {
+    MAP_FOREACH(Tour, tour_key, chess->tours) {
+        Tour tour = mapGet(chess->tours, tour_key);
+        if (tourGetActive(tour)) {
             continue;
         }
         found_ended_tour = true;
@@ -310,7 +310,9 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
         }
         fclose(stat_file);
     }
-    if (!found_ended_tour) { return CHESS_NO_TOURNAMENTS_ENDED; }
+    if (!found_ended_tour) {
+        return CHESS_NO_TOURNAMENTS_ENDED;
+    }
     return CHESS_SUCCESS;
 }
 
@@ -327,7 +329,7 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    for (; num_players>0; num_players--) {
+    for (num_players=num_players-1; num_players>=0; num_players--) {
         char* id = putIntInStr(playerGetId(sorted_players[num_players])); 
         if (id == NULL) {
             chessDestroy(chess);
