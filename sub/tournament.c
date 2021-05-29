@@ -136,10 +136,13 @@ Tour CreateTour(int tournament_id, int max_games_per_player, const char* tournam
 void set_winner(Tour tour) {
     assert(tour != NULL);
     assert(tour->player_in_tour != NULL);
-    PlayerInTour winner = mapGetFirst(tour->player_in_tour);
-    MAP_FOREACH(int*, curr_player, tour->player_in_tour) {
-        playerInTourUpdatePoints(mapGet(tour->player_in_tour, (void*)curr_player));
-        winner = playerInTourMaxPlayer(winner, mapGet(tour->player_in_tour, curr_player)); 
+    MapKeyElement first_key = mapGetFirst(tour->player_in_tour);
+    PlayerInTour winner = mapGet(tour->player_in_tour, first_key);
+    freeInt(first_key);
+    MAP_FOREACH(int*, curr_player_key, tour->player_in_tour) {
+        PlayerInTour curr_player = mapGet(tour->player_in_tour, (void*)curr_player_key);
+        playerInTourUpdatePoints(curr_player);
+        winner = playerInTourMaxPlayer(winner, curr_player); 
     }
     tour->winner_id = playerInTourGetId(winner);
 }
