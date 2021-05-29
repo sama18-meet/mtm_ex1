@@ -12,6 +12,7 @@
 
 #define MAX_INT_DIGITS 10
 #define NUM_TOUR_STATISTICS_FIELDS 6
+#define DECIMAL_DIGITS 2
 
 
 struct chess_system_t {
@@ -180,15 +181,23 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
         return CHESS_EXCEEDED_GAMES;
     }
     // all is good, create game 
-    if (!playerAddIfNew(tourGetPlayerInTour(tour), first_player, createPlayerInTourVoid, playerInTourFreeVoid) ||
-        !playerAddIfNew(chess->players, first_player, createPlayerVoid, freePlayerVoid) ||
-        !playerAddIfNew(tourGetPlayerInTour(tour), second_player, createPlayerInTourVoid, playerInTourFreeVoid) ||
-        !playerAddIfNew(chess->players, second_player, createPlayerVoid, freePlayerVoid))
+    bool player1_is_new;
+    bool player2_is_new;
+    if (!playerAddIfNew(tourGetPlayerInTour(tour), first_player, createPlayerInTourVoid, playerInTourFreeVoid, &player1_is_new) ||
+        !playerAddIfNew(chess->players, first_player, createPlayerVoid, freePlayerVoid, &player1_is_new) ||
+        !playerAddIfNew(tourGetPlayerInTour(tour), second_player, createPlayerInTourVoid, playerInTourFreeVoid, &player2_is_new) ||
+        !playerAddIfNew(chess->players, second_player, createPlayerVoid, freePlayerVoid, &player2_is_new))
     {
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    tourSetNumPlayers(tour, 1);
+    if (player1_is_new) {
+        tourSetNumPlayers(tour, 1);
+    }
+    if (player2_is_new) {
+        tourSetNumPlayers(tour, 1);
+    }
+ 
     Game game = gameCreate(first_player, second_player, winner, play_time);
     if (game == NULL)
     {
@@ -323,19 +332,20 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
         return CHESS_NULL_ARGUMENT;
     }
     assert(chess->players != NULL);
-    int num_players = mapGetSize(chess->players);
     Player* sorted_players = get_sorted_players(chess->players);
     if (sorted_players == NULL) {
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    for (num_players=num_players-1; num_players>=0; num_players--) {
-        char* id = putIntInStr(playerGetId(sorted_players[num_players])); 
+    int num_players = mapGetSize(chess->players);
+    for (int player_idx=num_players-1; player_idx>=0; player_idx--) {
+        set_level(sorted_players[player_idx]);
+        char* id = putIntInStr(playerGetId(sorted_players[player_idx])); 
         if (id == NULL) {
             chessDestroy(chess);
             return CHESS_OUT_OF_MEMORY;
         }
-        char* level = putIntInStr(playerGetLevel(sorted_players[num_players])); 
+        char* level = putDoubleInStr(playerGetLevel(sorted_players[player_idx])); 
         if (level == NULL) {
             free(id);
             chessDestroy(chess);
@@ -357,7 +367,6 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
         free(level);
 
     }
-    fclose(file);
     free(sorted_players);
     return CHESS_SUCCESS;
 }

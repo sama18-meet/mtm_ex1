@@ -22,8 +22,9 @@ int player_compare_levels(Player player1, Player player2);
 int playerGetNumLosses(Player player);
 int playerGetNumWins(Player player);
 int playerGetNumDraws(Player player);
+int playerGetNumGames(Player player);
 int playerGetPlaytime(Player player);
-int playerGetLevel(Player player);
+double playerGetLevel(Player player);
 int playerGetId(Player player);
 
 void playerSetNumLosses(Player player, int num);

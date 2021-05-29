@@ -13,7 +13,7 @@ struct Player_t {
     int num_wins;
     int num_draws;
     int playtime;
-    int level;
+    double level;
 };
 
 
@@ -27,10 +27,13 @@ int playerGetNumWins(Player player) {
 int playerGetNumDraws(Player player) {
     return player->num_draws;
 }
+int playerGetNumGames(Player player) {
+    return (player->num_wins)+(player->num_losses)+(player->num_draws);
+}
 int playerGetPlaytime(Player player) {
     return player->playtime;
 }
-int playerGetLevel(Player player) {
+double playerGetLevel(Player player) {
     return player->level;
 }
 int playerGetId(Player player) {
@@ -53,8 +56,12 @@ void playerSetPlaytime(Player player, int num) {
 
 void set_level(Player player)
 {
-    int num_games=(player->num_wins)+(player->num_losses)+(player->num_draws);
-    player->level=(NUM_WINS_WEIGHT*(player->num_wins))+(NUM_LOSSES_WEIGHT*(player->num_losses))+(NUM_DRAWS_WEIGHT*(player->num_draws))/(num_games);  
+    int num_games= playerGetNumGames(player);
+    if (num_games == 0) {
+        player->level = 0;
+        return;
+    }
+    player->level=(double)((NUM_WINS_WEIGHT*(player->num_wins))+(NUM_LOSSES_WEIGHT*(player->num_losses))+(NUM_DRAWS_WEIGHT*(player->num_draws)))/(num_games);  
 }
 
 
@@ -114,9 +121,9 @@ Player* get_sorted_players(Map players)
         return NULL;
     }
     int size = 0;
-    MAP_FOREACH(Player, p, players)
+    MAP_FOREACH(int*, player_key, players)
     {
-        insert_player(sorted_players, p, size);
+        insert_player(sorted_players, mapGet(players, player_key), size);
         size++;
     }
     return sorted_players;
@@ -137,8 +144,8 @@ void insert_player(Player* sorted_players, Player player, int size) {
 }
 
 int player_compare_levels(Player player1, Player player2) {
-    int level1 = player1->level;
-    int level2 = player2->level;
+    double level1 = player1->level;
+    double level2 = player2->level;
     if (level1 != level2)
     {
         return level1-level2;

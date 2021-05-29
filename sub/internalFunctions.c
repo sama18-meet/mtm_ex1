@@ -11,9 +11,11 @@ bool checkValidPlaytime(int playtime) {
 }
 
 
-bool playerAddIfNew(Map map, int player_id, createPalyerFunc create_func, freePlayerFunc free_func) {
+bool playerAddIfNew(Map map, int player_id, createPalyerFunc create_func, freePlayerFunc free_func, bool*player_is_new) {
     MapDataElement player = mapGet(map, &player_id);
+    *player_is_new=false;
     if (player == NULL) {
+        *player_is_new=true;
         MapDataElement player = create_func(player_id);
         if (player == NULL) {
             return false;
@@ -81,6 +83,9 @@ ChessResult putToFile(ChessSystem chess,str_returning_func func, FILE* file, Tou
     if (fputs_out == EOF) {
         return CHESS_SAVE_FAILURE;
     }
+    if (fputs("\n", file) == EOF) {
+        return CHESS_SAVE_FAILURE;
+    }
     return CHESS_SUCCESS;
 }
 
@@ -119,6 +124,6 @@ char* putIntInStr(int num) {
 
 char* putDoubleInStr(double doub) {
     char* str = malloc(sizeof(*str)* MAX_DIGITS);
-    sprintf(str, "%lf", doub);
+    sprintf(str, "%.2f", doub);
     return str;
 }

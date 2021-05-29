@@ -191,7 +191,8 @@ char* getWinnerIdStr(Tour tour) {
 }
 char* getLongestGameTimeStr(Tour tour) {
     int longest_game_time = -1;
-    MAP_FOREACH(Game, game, tour->games) {
+    MAP_FOREACH(Game, game_key, tour->games) {
+        Game game = mapGet(tour->games, game_key);
         if (gameGetTime(game) > longest_game_time)
             longest_game_time = gameGetTime(game);
     }
@@ -200,7 +201,8 @@ char* getLongestGameTimeStr(Tour tour) {
 char* getAvgGameTimeStr(Tour tour) {
     int times_sum = 0;
     int num_games = 0;
-    MAP_FOREACH(Game, game, tour->games) {
+    MAP_FOREACH(Game, game_key, tour->games) {
+        Game game = mapGet(tour->games, game_key);
         times_sum += gameGetTime(game);
         num_games++;
     }
@@ -208,7 +210,8 @@ char* getAvgGameTimeStr(Tour tour) {
     return putDoubleInStr(times_sum/num_games);
 }
 char* getLocationStr(Tour tour) {
-    char* location_copy = malloc(sizeof(location_copy)*strlen(tour->location));
+    char* location_copy = malloc(sizeof(char)*(strlen(tour->location)+1));
+    strcpy(location_copy, tour->location);
     return location_copy;
 }
 char* getNumOfGamesStr(Tour tour) {
