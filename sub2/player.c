@@ -1,6 +1,7 @@
 #include "player.h"
 #include "chessSystem.h"
 
+#include "intKey.h"
 #include <stdlib.h>
 #define NUM_WINS_WEIGHT 6
 #define NUM_LOSSES_WEIGHT -10
@@ -123,6 +124,7 @@ Player* getSortedPlayers(Map players)
     {
         insertPlayer(sorted_players, mapGet(players, player_key), size);
         size++;
+        freeInt(player_key);
     }
     return sorted_players;
 }

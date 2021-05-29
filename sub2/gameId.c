@@ -9,7 +9,9 @@ struct GameId_t {
 
 GameId gameIdCreate(int id1, int id2) {
     GameId game_id = malloc(sizeof(*game_id));
-    if (game_id == NULL) { return NULL; }
+    if (game_id == NULL) {
+        return NULL;
+    }
     game_id->id1 = id1;
     game_id->id2 = id2;
     return game_id;

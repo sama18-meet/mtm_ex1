@@ -144,6 +144,7 @@ void setWinner(Tour tour) {
         PlayerInTour curr_player = mapGet(tour->player_in_tour, (void*)curr_player_key);
         playerInTourUpdatePoints(curr_player);
         winner = playerInTourMaxPlayer(winner, curr_player); 
+        freeInt(curr_player_key);
     }
     tour->winner_id = playerInTourGetId(winner);
 }
@@ -168,8 +169,9 @@ bool playerExceededGames(Tour tour, int player_id) {
 void removePlayerFromTour(Tour tour, int player_id)
  {
     assert(tour != NULL);
-    MAP_FOREACH(Game, g, tour->games)
+    MAP_FOREACH(GameId, game_key, tour->games)
     {
+        Game g = mapGet(tour->games, game_key);
         if (gameGetPlayer1Id(g) == player_id) {
             gameSetPlayer1Id(g, 0);
             gameIdChange(gameGetId(g), 0, gameGetPlayer2Id(g));
@@ -186,6 +188,7 @@ void removePlayerFromTour(Tour tour, int player_id)
                 gameSetWinner(g, FIRST_PLAYER);
             }
         }
+        gameIdFree(game_key);
     }
     mapRemove(tour->player_in_tour, &player_id);
 }
@@ -195,20 +198,22 @@ char* getWinnerIdStr(Tour tour) {
 }
 char* getLongestGameTimeStr(Tour tour) {
     int longest_game_time = -1;
-    MAP_FOREACH(Game, game_key, tour->games) {
+    MAP_FOREACH(GameId, game_key, tour->games) {
         Game game = mapGet(tour->games, game_key);
         if (gameGetTime(game) > longest_game_time)
             longest_game_time = gameGetTime(game);
+        gameIdFree(game_key);
     }
     return putIntInStr(longest_game_time);
 }
 char* getAvgGameTimeStr(Tour tour) {
     int times_sum = 0;
     int num_games = 0;
-    MAP_FOREACH(Game, game_key, tour->games) {
+    MAP_FOREACH(GameId, game_key, tour->games) {
         Game game = mapGet(tour->games, game_key);
         times_sum += gameGetTime(game);
         num_games++;
+        gameIdFree(game_key);
     }
     assert(mapGetSize(tour->games) == num_games);
     return putDoubleInStr(times_sum/num_games);

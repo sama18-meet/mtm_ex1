@@ -102,6 +102,7 @@ ChessResult chessAddTournament (ChessSystem chess, int tournament_id, int max_ga
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
+    tourFree(tour);
     return CHESS_SUCCESS;
 }
 
@@ -121,16 +122,17 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
     }
     Tour tour_obj=mapGet(chess->tours, &tournament_id); 
     assert(tour_obj!=NULL);
-    MAP_FOREACH(PlayerInTour, player_in_tour, tourGetPlayerInTour(tour_obj))
+    MAP_FOREACH(int*, player_in_tour_id, tourGetPlayerInTour(tour_obj))
     {
-        int player_in_tour_id = playerInTourGetId(player_in_tour);
-        Player player=mapGet(chess->players,&player_in_tour_id);
+        PlayerInTour player_in_tour = mapGet(tourGetPlayerInTour(tour_obj), &player_in_tour_id);
+        Player player=mapGet(chess->players, &player_in_tour_id);
         assert(player!=NULL);
         playerSetNumWins(player, -playerInTourGetNumWins(player_in_tour));
         playerSetNumLosses(player, -playerInTourGetNumLosses(player_in_tour));
         playerSetNumDraws(player, -playerInTourGetNumDraws(player_in_tour));
         playerSetPlaytime(player, -playerInTourGetPlaytime(player_in_tour));
         setLevel(player);
+        freeInt(player_in_tour_id);
     }
     mapRemove(chess->tours, &tournament_id);
     return CHESS_SUCCESS;
@@ -228,11 +230,12 @@ ChessResult chessRemovePlayer(ChessSystem chess, int player_id) {
     {
         return CHESS_PLAYER_NOT_EXIST; 
     }
-    MAP_FOREACH(Tour, t_id, chess->tours)
+    MAP_FOREACH(int*, t_id, chess->tours)
     {
         Tour t_obj = mapGet(chess->tours, t_id);
         assert(t_obj != NULL);
         removePlayerFromTour(t_obj, player_id);
+        freeInt(t_id);
     }
     mapRemove(chess->players, &player_id);
     return CHESS_SUCCESS;
@@ -291,15 +294,17 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
         return CHESS_NULL_ARGUMENT;
     }
     bool found_ended_tour = false;
-    MAP_FOREACH(Tour, tour_key, chess->tours) {
+    MAP_FOREACH(int*, tour_key, chess->tours) {
         Tour tour = mapGet(chess->tours, tour_key);
         if (tourGetActive(tour)) {
+            freeInt(tour_key);
             continue;
         }
         found_ended_tour = true;
         FILE* stat_file = fopen(path_file, "a"); // shold this be "a" or "w" ?
         if (stat_file == NULL)
         { 
+            freeInt(tour_key);
             return CHESS_SAVE_FAILURE;
         }
         // start printing to file
@@ -314,10 +319,12 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
             ChessResult put_res = putToFile(chess, funcs[i], stat_file, tour);
             if (put_res != CHESS_SUCCESS) {
                 fclose(stat_file);
+                freeInt(tour_key);
                 return put_res;
             }
         }
         fclose(stat_file);
+        freeInt(tour_key);
     }
     if (!found_ended_tour) {
         return CHESS_NO_TOURNAMENTS_ENDED;

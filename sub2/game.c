@@ -48,7 +48,6 @@ Game gameCreate(int player1_id, int player2_id, Winner winner, int time) {
         gameFree(game);
         return NULL;
     }
-    
     game->id = game_id;
     game->player1_id = player1_id;
     game->player2_id = player2_id;
@@ -67,7 +66,7 @@ Game gameCopy(Game game) {
 }
 
 void* gameCopyToVoid(void* game) {
-    return (void*) gameCopy((Game)game);
+    return (void*)gameCopy((Game)game);
 }
 
 void gameFree(Game game) {
@@ -79,5 +78,5 @@ void gameFree(Game game) {
 }
 
 void gameFreeVoid(void* game) {
-    free((Game)game);
+    gameFree((Game)game);
 }
