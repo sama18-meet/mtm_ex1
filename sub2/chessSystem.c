@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <errno.h>
+#include <string.h>
 
 #define MAX_INT_DIGITS 10
 #define NUM_TOUR_STATISTICS_FIELDS 6
@@ -122,10 +124,11 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id)
     }
     Tour tour_obj=mapGet(chess->tours, &tournament_id); 
     assert(tour_obj!=NULL);
-    MAP_FOREACH(int*, player_in_tour_id, tourGetPlayerInTour(tour_obj))
+    Map players_in_tour = tourGetPlayerInTour(tour_obj);
+    MAP_FOREACH(int*, player_in_tour_id, players_in_tour)
     {
-        PlayerInTour player_in_tour = mapGet(tourGetPlayerInTour(tour_obj), &player_in_tour_id);
-        Player player=mapGet(chess->players, &player_in_tour_id);
+        PlayerInTour player_in_tour = mapGet(players_in_tour, player_in_tour_id);
+        Player player=mapGet(chess->players, player_in_tour_id);
         assert(player!=NULL);
         playerSetNumWins(player, -playerInTourGetNumWins(player_in_tour));
         playerSetNumLosses(player, -playerInTourGetNumLosses(player_in_tour));
@@ -220,7 +223,9 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
 }
 
 ChessResult chessRemovePlayer(ChessSystem chess, int player_id) {
-    if (chess == NULL) { return CHESS_NULL_ARGUMENT; }
+    if (chess == NULL) {
+        return CHESS_NULL_ARGUMENT;
+    }
     assert(chess->players != NULL);
     if (!checkValidId(player_id)) 
     {
@@ -234,7 +239,11 @@ ChessResult chessRemovePlayer(ChessSystem chess, int player_id) {
     {
         Tour t_obj = mapGet(chess->tours, t_id);
         assert(t_obj != NULL);
-        removePlayerFromTour(t_obj, player_id);
+        if (removePlayerFromTour(t_obj, player_id) == false) {
+            freeInt(t_id);
+            chessDestroy(chess);
+            return CHESS_OUT_OF_MEMORY;
+        }
         freeInt(t_id);
     }
     mapRemove(chess->players, &player_id);
@@ -301,10 +310,12 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
             continue;
         }
         found_ended_tour = true;
-        FILE* stat_file = fopen(path_file, "a"); // shold this be "a" or "w" ?
+        FILE* stat_file = fopen(path_file, "a+"); // shold this be "a" or "w" ?
         if (stat_file == NULL)
         { 
             freeInt(tour_key);
+            printf("fopen failed, errno = %d\n", errno);
+            printf("errno is: %s\n", strerror(errno));
             return CHESS_SAVE_FAILURE;
         }
         // start printing to file
@@ -320,6 +331,7 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
             if (put_res != CHESS_SUCCESS) {
                 fclose(stat_file);
                 freeInt(tour_key);
+                printf("in if 2\n");
                 return put_res;
             }
         }

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 #define MAX_DIGITS 15
 
@@ -78,12 +79,14 @@ ChessResult putToFile(ChessSystem chess,str_returning_func func, FILE* file, Tou
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
     }
-    int fputs_out = fputs(out,file);
+    int fprintf_out = fprintf(file, out);
     free(out);
-    if (fputs_out == EOF) {
+    if (fprintf_out < 0) {
+        printf("sub return is 1. errno is %d\n", errno);
         return CHESS_SAVE_FAILURE;
     }
-    if (fputs("\n", file) == EOF) {
+    if (fprintf(file, "\n")  < 0) {
+        printf("sub return is 2\n");
         return CHESS_SAVE_FAILURE;
     }
     return CHESS_SUCCESS;

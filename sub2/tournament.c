@@ -6,6 +6,8 @@
 #include "intKey.h"
 #include "internalFunctions.h"
 
+#define DELETED_PLAYER 0
+
 struct Tour_t {
     int id;
     const char* location;
@@ -166,31 +168,55 @@ bool playerExceededGames(Tour tour, int player_id) {
 }
 
 
-void removePlayerFromTour(Tour tour, int player_id)
- {
+bool removePlayerFromTour(Tour tour, int player_id) {
     assert(tour != NULL);
-    MAP_FOREACH(GameId, game_key, tour->games)
+    Map games_map_copy = mapCopy(tour->games);
+    if (games_map_copy == NULL) {
+        return false;
+    }
+    MAP_FOREACH(GameId, game_key, games_map_copy)
     {
-        Game g = mapGet(tour->games, game_key);
-        if (gameGetPlayer1Id(g) == player_id) {
-            gameSetPlayer1Id(g, 0);
-            gameIdChange(gameGetId(g), 0, gameGetPlayer2Id(g));
+        Game game = mapGet(games_map_copy, game_key);
+        bool change_game = false;
+        int time = gameGetTime(game);
+        Winner winner = gameGetWinner(game);
+        GameId old_game_id = gameGetId(game);
+        int remaining_player_id;
+        if (gameGetPlayer1Id(game) == player_id) {
+            change_game = true;
+            remaining_player_id = gameGetPlayer2Id(game);
             if (tour->active) {
-                gameSetWinner(g, SECOND_PLAYER);
+                winner = SECOND_PLAYER;
             }
-
         }
-        else if (gameGetPlayer2Id(g) == player_id) 
-        {
-            gameSetPlayer2Id(g, 0);
-            gameIdChange(gameGetId(g), gameGetPlayer1Id(g), 0);
+        else if (gameGetPlayer2Id(game) == player_id)  {
+            change_game = true;
+            remaining_player_id = gameGetPlayer1Id(game);
             if (tour->active){
-                gameSetWinner(g, FIRST_PLAYER);
+                winner = FIRST_PLAYER;
             }
+        }
+        if (change_game) {
+            MapResult res;
+            res = mapRemove(tour->games, old_game_id);
+            assert(res == MAP_SUCCESS);
+            Game new_game = gameCreate(DELETED_PLAYER, remaining_player_id, winner, time);
+            if (new_game == NULL) {
+                return false;
+            }
+            res = mapPut(tour->games, gameGetId(new_game), new_game);
+            if (res == MAP_OUT_OF_MEMORY) {
+                gameFree(new_game);
+                return false;
+            }
+            assert (res == MAP_SUCCESS);
+            gameFree(new_game);
         }
         gameIdFree(game_key);
     }
     mapRemove(tour->player_in_tour, &player_id);
+    mapDestroy(games_map_copy);
+    return true;
 }
 
 char* getWinnerIdStr(Tour tour) {
