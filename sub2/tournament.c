@@ -202,11 +202,15 @@ bool removePlayerFromTour(Tour tour, int player_id) {
             assert(res == MAP_SUCCESS);
             Game new_game = gameCreate(DELETED_PLAYER, remaining_player_id, winner, time);
             if (new_game == NULL) {
+                gameIdFree(game_key);
+                mapDestroy(games_map_copy);
                 return false;
             }
             res = mapPut(tour->games, gameGetId(new_game), new_game);
             if (res == MAP_OUT_OF_MEMORY) {
+                gameIdFree(game_key);
                 gameFree(new_game);
+                mapDestroy(games_map_copy);
                 return false;
             }
             assert (res == MAP_SUCCESS);
