@@ -281,19 +281,23 @@ ChessResult chessEndTournament (ChessSystem chess, int tournament_id) {
 double chessCalculateAveragePlayTime (ChessSystem chess, int player_id, ChessResult* chess_result) {
     if (chess == NULL)
     {
-        return CHESS_NULL_ARGUMENT;
+        *chess_result = CHESS_NULL_ARGUMENT;
+        return -1;
     }
     if (!checkValidId(player_id))
     {
-        return CHESS_INVALID_ID;
+        *chess_result = CHESS_INVALID_ID;
+        return -1;
     }
     Player player = mapGet(chess->players, &player_id);
     if (player == NULL)
     {
-        return CHESS_PLAYER_NOT_EXIST;
+        *chess_result = CHESS_PLAYER_NOT_EXIST;
+        return -1;
     }
     int num_games=playerGetNumWins(player) + playerGetNumLosses(player) + playerGetNumDraws(player);
-    return playerGetPlaytime(player)/num_games;
+    *chess_result = CHESS_SUCCESS;
+    return ((double)playerGetPlaytime(player))/((double)num_games);
 }
 
 

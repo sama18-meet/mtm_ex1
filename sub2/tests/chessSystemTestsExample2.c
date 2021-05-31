@@ -1,6 +1,6 @@
 #include <stdlib.h>
-#include "chessSystem.h"
-#include "test_utilities.h"
+#include "../chessSystem.h"
+#include "../test_utilities.h"
 
 void red() {
     printf("\033[1;31m");
