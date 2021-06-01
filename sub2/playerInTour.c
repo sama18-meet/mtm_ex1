@@ -100,9 +100,9 @@ void* playerInTourCopyToVoid(void* player_in_tour) {
 
 void playerInTourUpdatePoints(PlayerInTour player_in_tour) {
     assert(player_in_tour != NULL);
-    int sum = player_in_tour->num_wins*POINTS_PER_WIN
-              + player_in_tour->num_losses*POINTS_PER_LOSS
-              + player_in_tour->num_draws*POINTS_PER_DDRAW;
+    int sum = (player_in_tour->num_wins)*POINTS_PER_WIN
+              + (player_in_tour->num_losses)*POINTS_PER_LOSS
+              + (player_in_tour->num_draws)*POINTS_PER_DDRAW;
     player_in_tour->points = sum;
 }
 

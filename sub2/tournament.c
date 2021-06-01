@@ -246,7 +246,7 @@ char* getAvgGameTimeStr(Tour tour) {
         gameIdFree(game_key);
     }
     assert(mapGetSize(tour->games) == num_games);
-    return putDoubleInStr(times_sum/num_games);
+    return putDoubleInStr(((double)times_sum)/((double)num_games));
 }
 char* getLocationStr(Tour tour) {
     char* location_copy = malloc(sizeof(char)*(strlen(tour->location)+1));

@@ -188,10 +188,10 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     // all is good, create game 
     bool player1_is_new;
     bool player2_is_new;
-    if (!playerAddIfNew(tourGetPlayerInTour(tour), first_player, playerInTourCreateVoid, playerInTourFreeVoid, &player1_is_new) ||
-        !playerAddIfNew(chess->players, first_player, playerCreateVoid, playerFreeVoid, &player1_is_new) ||
-        !playerAddIfNew(tourGetPlayerInTour(tour), second_player, playerInTourCreateVoid, playerInTourFreeVoid, &player2_is_new) ||
-        !playerAddIfNew(chess->players, second_player, playerCreateVoid, playerFreeVoid, &player2_is_new))
+    if (!playerAddIfNew(chess->players, first_player, playerCreateVoid, playerFreeVoid, &player1_is_new) ||
+        !playerAddIfNew(tourGetPlayerInTour(tour), first_player, playerInTourCreateVoid, playerInTourFreeVoid, &player1_is_new) ||
+        !playerAddIfNew(chess->players, second_player, playerCreateVoid, playerFreeVoid, &player2_is_new) ||
+        !playerAddIfNew(tourGetPlayerInTour(tour), second_player, playerInTourCreateVoid, playerInTourFreeVoid, &player2_is_new))
     {
         chessDestroy(chess);
         return CHESS_OUT_OF_MEMORY;
@@ -306,6 +306,11 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
     { 
         return CHESS_NULL_ARGUMENT;
     }
+    FILE* stat_file = fopen(path_file, "w"); // shold this be "a" or "w" ?
+    if (stat_file == NULL) {
+        return CHESS_SAVE_FAILURE;
+    }
+    fclose(stat_file);
     bool found_ended_tour = false;
     MAP_FOREACH(int*, tour_key, chess->tours) {
         Tour tour = mapGet(chess->tours, tour_key);
@@ -314,7 +319,7 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file) {
             continue;
         }
         found_ended_tour = true;
-        FILE* stat_file = fopen(path_file, "a+"); // shold this be "a" or "w" ?
+        FILE* stat_file = fopen(path_file, "a"); // shold this be "a" or "w" ?
         if (stat_file == NULL)
         { 
             freeInt(tour_key);

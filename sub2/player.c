@@ -57,12 +57,12 @@ void playerSetPlaytime(Player player, int num) {
 
 void setLevel(Player player)
 {
-    int num_games= playerGetNumGames(player);
+    int num_games = playerGetNumGames(player);
     if (num_games == 0) {
         player->level = 0;
         return;
     }
-    player->level=(double)((NUM_WINS_WEIGHT*(player->num_wins))+(NUM_LOSSES_WEIGHT*(player->num_losses))+(NUM_DRAWS_WEIGHT*(player->num_draws)))/(num_games);  
+    player->level=((double)(NUM_WINS_WEIGHT*(player->num_wins))+(NUM_LOSSES_WEIGHT*(player->num_losses))+(NUM_DRAWS_WEIGHT*(player->num_draws)))/((double)(num_games));
 }
 
 
