@@ -62,7 +62,8 @@ void setLevel(Player player)
         player->level = 0;
         return;
     }
-    player->level=((double)(NUM_WINS_WEIGHT*(player->num_wins))+(NUM_LOSSES_WEIGHT*(player->num_losses))+(NUM_DRAWS_WEIGHT*(player->num_draws)))/((double)(num_games));
+    double total_weigh = (NUM_WINS_WEIGHT*(player->num_wins))+(NUM_LOSSES_WEIGHT*(player->num_losses))+(NUM_DRAWS_WEIGHT*(player->num_draws));
+    player->level = total_weigh/((double)num_games);
 }
 
 
@@ -143,7 +144,7 @@ void insertPlayer(Player* sorted_players, Player player, int size) {
     sorted_players[size] = player;
 }
 
-int playerCompareLevels(Player player1, Player player2) {
+double playerCompareLevels(Player player1, Player player2) {
     double level1 = player1->level;
     double level2 = player2->level;
     if (level1 != level2)

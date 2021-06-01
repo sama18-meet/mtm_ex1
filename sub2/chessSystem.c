@@ -239,7 +239,7 @@ ChessResult chessRemovePlayer(ChessSystem chess, int player_id) {
     {
         Tour t_obj = mapGet(chess->tours, t_id);
         assert(t_obj != NULL);
-        if (removePlayerFromTour(t_obj, player_id) == false) {
+        if (removePlayerFromTour(t_obj, chess->players, player_id) == false) {
             freeInt(t_id);
             chessDestroy(chess);
             return CHESS_OUT_OF_MEMORY;
@@ -360,6 +360,10 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
         return CHESS_NULL_ARGUMENT;
     }
     assert(chess->players != NULL);
+    MAP_FOREACH(int*, player_id, chess->players) {
+        setLevel(mapGet(chess->players, player_id));
+        freeInt(player_id);
+    }
     Player* sorted_players = getSortedPlayers(chess->players);
     if (sorted_players == NULL) {
         chessDestroy(chess);
@@ -367,7 +371,6 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file)
     }
     int num_players = mapGetSize(chess->players);
     for (int player_idx=num_players-1; player_idx>=0; player_idx--) {
-        setLevel(sorted_players[player_idx]);
         char* id = putIntInStr(playerGetId(sorted_players[player_idx])); 
         if (id == NULL) {
             chessDestroy(chess);

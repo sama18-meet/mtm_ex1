@@ -17,7 +17,7 @@ void playerFree(Player player);
 void playerFreeVoid(void* player);
 Player* getSortedPlayers(Map players);
 void insertPlayer(Player* sorted_players, Player player, int size);
-int playerCompareLevels(Player player1, Player player2);
+double playerCompareLevels(Player player1, Player player2);
 
 int playerGetNumLosses(Player player);
 int playerGetNumWins(Player player);

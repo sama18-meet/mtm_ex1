@@ -168,7 +168,7 @@ bool playerExceededGames(Tour tour, int player_id) {
 }
 
 
-bool removePlayerFromTour(Tour tour, int player_id) {
+bool removePlayerFromTour(Tour tour, Map players, int player_id) {
     assert(tour != NULL);
     Map games_map_copy = mapCopy(tour->games);
     if (games_map_copy == NULL) {
@@ -182,18 +182,26 @@ bool removePlayerFromTour(Tour tour, int player_id) {
         Winner winner = gameGetWinner(game);
         GameId old_game_id = gameGetId(game);
         int remaining_player_id;
-        if (gameGetPlayer1Id(game) == player_id) {
+        int player1_id = gameGetPlayer1Id(game);
+        int player2_id = gameGetPlayer2Id(game);
+        Player player1_chess = mapGet(players, &player1_id);
+        Player player2_chess = mapGet(players, &player2_id);
+        PlayerInTour player1_in_tour = mapGet(tour->player_in_tour, &player1_id);
+        PlayerInTour player2_in_tour = mapGet(tour->player_in_tour, &player2_id);
+        if (player1_id == player_id) {
             change_game = true;
-            remaining_player_id = gameGetPlayer2Id(game);
+            remaining_player_id = player2_id;
             if (tour->active) {
                 winner = SECOND_PLAYER;
+                playerChangeLossToWin(player2_chess, player2_in_tour);
             }
         }
-        else if (gameGetPlayer2Id(game) == player_id)  {
+        else if (player2_id == player_id)  {
             change_game = true;
-            remaining_player_id = gameGetPlayer1Id(game);
+            remaining_player_id = player1_id;
             if (tour->active){
                 winner = FIRST_PLAYER;
+                playerChangeLossToWin(player1_chess, player1_in_tour);
             }
         }
         if (change_game) {

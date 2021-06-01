@@ -29,7 +29,7 @@ Tour tourCreate(int tournament_id, int max_games_per_player, const char* tournam
 void setWinner(Tour tour);
 bool playerExceededGames(Tour tour, int player_id);
 PlayerInTour getPlayerInTour(Tour tour, int player_id);
-bool removePlayerFromTour(Tour tour, int player_id);
+bool removePlayerFromTour(Tour tour, Map players, int player_id);
 char* getWinnerIdStr(Tour tour);
 char* getLongestGameTimeStr(Tour tour);
 char* getAvgGameTimeStr(Tour tour);

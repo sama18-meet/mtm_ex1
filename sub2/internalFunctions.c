@@ -62,14 +62,22 @@ void PlayersInfoUpdate(Map players, Map playerInTour, int first_player, int seco
         playerInTourSetNumDraws(player2_in_tour, 1);
         playerSetNumDraws(player1_chess, 1);
         playerSetNumDraws(player2_chess, 1);
-
     }
-
     playerSetPlaytime(player1_chess, playtime);
     playerSetPlaytime(player2_chess, playtime);
     playerInTourSetPlaytime(player1_in_tour, playtime);
     playerInTourSetPlaytime(player1_in_tour, playtime);
 }
+
+
+void playerChangeLossToWin(Player player_chess, PlayerInTour player_in_tour) {
+    playerSetNumWins(player_chess, 1);
+    playerSetNumLosses(player_chess, -1);
+    playerInTourSetNumWins(player_in_tour, 1);
+    playerInTourSetNumLosses(player_in_tour, -1);
+}
+ 
+
 
 ChessResult putToFile(ChessSystem chess,str_returning_func func, FILE* file, Tour tour) {
     assert(tour!=NULL);
