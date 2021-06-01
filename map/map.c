@@ -190,10 +190,10 @@ MapKeyElement mapGetNext(Map map) {
         return NULL;
     if (map->currentPair->next == NULL)
         return NULL;
-    MapKeyElement keyCopy = map->copyKeyElement(map->firstPair->key);
+    map->currentPair = map->currentPair->next;
+    MapKeyElement keyCopy = map->copyKeyElement(map->currentPair->key);
     if (keyCopy == NULL)
         return NULL;
-    map->currentPair = map->currentPair->next;
     return keyCopy;
 }
 
